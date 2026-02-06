@@ -8,8 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <style>
 :root{
@@ -18,103 +16,24 @@
 --bg:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
 --glass:rgba(255,255,255,0.05);
 }
-
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
 body{background:var(--bg);color:white;padding-bottom:120px}
-
-header{
-background:rgba(0,0,0,0.4);
-backdrop-filter:blur(10px);
-padding:12px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
+header{background:rgba(0,0,0,.4);padding:12px;display:flex;justify-content:space-between;align-items:center}
 .logo-area{display:flex;align-items:center;gap:10px}
-.logo-area img{
-height:50px;width:50px;border-radius:50%;
-border:2px solid var(--red);
-box-shadow:0 0 10px var(--red);
-}
-
+.logo-area img{height:50px;width:50px;border-radius:50%;border:2px solid var(--red)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:15px}
-
-.card{
-background:var(--glass);
-backdrop-filter:blur(12px);
-border-radius:16px;
-padding:15px;
-text-align:center;
-box-shadow:0 10px 25px rgba(0,0,0,.4);
-}
-
-.card img{height:90px;width:100%;object-fit:contain;margin-bottom:10px}
-
-.price{font-weight:bold;font-size:18px;color:var(--green);margin:6px 0}
-
-.btn{
-background:linear-gradient(45deg,var(--red),#ff758f);
-border:none;
-padding:10px;
-border-radius:10px;
-color:white;
-font-weight:bold;
-cursor:pointer;
-margin:4px 0;
-width:100%;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:6px 0;
-border-radius:8px;
-border:none;
-background:#1e293b;
-color:white;
-}
-
-.modal{
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.7);
-align-items:center;
-justify-content:center;
-z-index:999;
-}
-
-.box{
-background:#111827;
-padding:20px;
-border-radius:16px;
-width:90%;
-max-width:400px;
-}
-
-.bottom-nav{
-position:fixed;
-bottom:0;
-width:100%;
-background:rgba(0,0,0,.6);
-display:flex;
-justify-content:space-around;
-padding:12px 0;
-}
-
-.nav-item{font-size:12px;text-align:center;cursor:pointer}
-
-.order-card{
-background:#1e293b;
-padding:10px;
-border-radius:10px;
-margin-bottom:10px;
-font-size:12px;
-}
+.card{background:var(--glass);padding:15px;border-radius:16px;text-align:center}
+.card img{height:90px;width:100%;object-fit:contain}
+.price{color:var(--green);font-weight:bold;margin:5px 0}
+.btn{background:linear-gradient(45deg,var(--red),#ff758f);border:none;padding:10px;border-radius:10px;color:white;font-weight:bold;margin:4px 0;width:100%;cursor:pointer}
+input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;background:#1e293b;color:white}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999}
+.box{background:#111827;padding:20px;border-radius:16px;width:90%;max-width:400px}
+.order-card{background:#1e293b;padding:10px;border-radius:10px;margin-bottom:10px;font-size:12px}
+.bottom-nav{position:fixed;bottom:0;width:100%;background:rgba(0,0,0,.6);display:flex;justify-content:space-around;padding:12px 0}
+.nav-item{text-align:center;font-size:12px;cursor:pointer}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -131,7 +50,10 @@ font-size:12px;
 </div>
 </header>
 
-<!-- LOGIN BOX -->
+<div style="padding:10px">
+<input id="searchBox" placeholder="Search Products..." onkeyup="searchProduct()">
+</div>
+
 <div id="loginBox" style="padding:15px;text-align:center">
 <input id="phoneNumber" placeholder="+91XXXXXXXXXX">
 <div id="recaptcha-container"></div>
@@ -142,7 +64,16 @@ font-size:12px;
 
 <div class="grid" id="productGrid"></div>
 
-<!-- ADMIN PANEL -->
+<div id="profileModal" class="modal">
+<div class="box">
+<h3>My Profile</h3>
+<input id="profileName" placeholder="Full Name">
+<input id="profileAddress" placeholder="Address">
+<button class="btn" onclick="saveProfile()">Save</button>
+<button class="btn" style="background:#444" onclick="closeModal('profileModal')">Close</button>
+</div>
+</div>
+
 <div id="adminPanel" class="modal">
 <div class="box">
 <h3>Add / Edit Product</h3>
@@ -153,41 +84,87 @@ font-size:12px;
 <hr>
 <h3>All Orders</h3>
 <div id="orderList"></div>
-<button class="btn" onclick="closeModal('adminPanel')" style="background:#444">Close</button>
+<button class="btn" style="background:#444" onclick="closeModal('adminPanel')">Close</button>
 </div>
 </div>
 
-<!-- MY ORDERS -->
+<div id="buyModal" class="modal">
+<div class="box">
+<h3>Delivery Details</h3>
+<input id="customerName" placeholder="Full Name">
+<input id="customerPhone" placeholder="Mobile Number">
+<input id="customerAddress" placeholder="Full Address">
+<input id="customerCity" placeholder="City">
+<input id="customerPincode" placeholder="Pincode">
+
+<img id="upiQR" style="width:150px;margin:10px auto;display:block">
+
+<button class="btn" onclick="placeCOD()">Cash on Delivery</button>
+<button class="btn" style="background:green" onclick="payOnline()">Pay via UPI</button>
+<button class="btn" style="background:#444" onclick="closeModal('buyModal')">Cancel</button>
+</div>
+</div>
+
 <div id="myOrdersModal" class="modal">
 <div class="box">
 <h3>My Orders</h3>
 <div id="myOrdersList"></div>
-<button class="btn" onclick="closeModal('myOrdersModal')" style="background:#444">Close</button>
+<button class="btn" style="background:#444" onclick="closeModal('myOrdersModal')">Close</button>
 </div>
 </div>
 
 <div class="bottom-nav">
 <div class="nav-item" onclick="location.reload()">🏠<br>Home</div>
 <div class="nav-item" onclick="showMyOrders()">📦<br>Orders</div>
+<div class="nav-item" onclick="openProfile()">👤<br>Profile</div>
 </div>
 
 <script>
 firebase.initializeApp({
-apiKey: "AIzaSyBuCywyMgEw_j9yeHD-E4KwRWZGreWagTc",
-authDomain: "shree-4c33e.firebaseapp.com",
-projectId: "shree-4c33e",
-storageBucket: "shree-4c33e.firebasestorage.app",
-messagingSenderId: "759128544690",
-appId: "1:759128544690:web:3f57e7ed9117a1acdd80ab",
-measurementId: "G-NP1D792NVF"
+apiKey:"AIzaSyBuCywyMgEw_j9yeHD-E4KwRWZGreWagTc",
+authDomain:"shree-4c33e.firebaseapp.com",
+projectId:"shree-4c33e"
 });
 
-firebase.analytics();
 const db=firebase.firestore();
 const ADMIN="+917052055713";
-let editId=null;
+const UPI_ID="dr.deepak2121-2@oksbi";
 
-/* LOGIN SYSTEM */
+let editId=null;
+let selectedProduct=null;
+
+/* SEARCH */
+function searchProduct(){
+let value=searchBox.value.toLowerCase();
+document.querySelectorAll(".card").forEach(card=>{
+card.style.display=card.innerText.toLowerCase().includes(value)?"block":"none";
+});
+}
+
+/* PROFILE */
+function openProfile(){
+let user=localStorage.getItem("userPhone");
+db.collection("users").doc(user).get().then(doc=>{
+if(doc.exists){
+profileName.value=doc.data().name||"";
+profileAddress.value=doc.data().address||"";
+}
+showModal("profileModal");
+});
+}
+
+function saveProfile(){
+let user=localStorage.getItem("userPhone");
+db.collection("users").doc(user).set({
+name:profileName.value,
+address:profileAddress.value,
+phone:user
+});
+alert("Profile Saved");
+closeModal("profileModal");
+}
+
+/* LOGIN */
 firebase.auth().useDeviceLanguage();
 window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'normal'});
 
@@ -202,44 +179,131 @@ confirmationResult.confirm(otpBox.value)
 .then(res=>{
 localStorage.setItem("userPhone",res.user.phoneNumber);
 location.reload();
-})
-.catch(()=>alert("Wrong OTP"));
+});
 }
 
-/* LOAD DATA */
+/* LOAD PRODUCTS */
 function loadData(){
 let user=localStorage.getItem("userPhone");
 if(user){
 welcomeMsg.innerText="Logged in: "+user;
 loginBox.style.display="none";
 logoutBtn.style.display="block";
-if(user===ADMIN){
-addBtn.style.display="block";
-loadOrders();
-}
+if(user===ADMIN){addBtn.style.display="block";loadOrders();}
 }
 
 db.collection("products").onSnapshot(s=>{
 productGrid.innerHTML="";
 s.forEach(doc=>{
 let p=doc.data();
-let adminBtns="";
-if(user===ADMIN){
-adminBtns=`
-<button class="btn" onclick="editProduct('${doc.id}','${p.name}',${p.price},'${p.img}')">Edit</button>
-<button class="btn" style="background:#000" onclick="deleteProduct('${doc.id}')">Delete</button>`;
-}
+let buttons=user===ADMIN?
+`<button class="btn" onclick="editProduct('${doc.id}','${p.name}',${p.price},'${p.img}')">Edit</button>
+<button class="btn" style="background:#000" onclick="deleteProduct('${doc.id}')">Delete</button>`
+:`<button class="btn" onclick="openBuy('${doc.id}')">Buy Now</button>`;
+
 productGrid.innerHTML+=`
 <div class="card">
 <img src="${p.img||''}">
 <p>${p.name}</p>
 <div class="price">₹${p.price}</div>
-<button class="btn" onclick="orderNow('${doc.id}')">Cash Order</button>
-<button class="btn" style="background:green" onclick="payNow('${doc.id}')">Pay Now</button>
-${adminBtns}
+${buttons}
 </div>`;
 });
 });
+}
+
+/* BUY */
+function openBuy(id){
+db.collection("products").doc(id).get().then(doc=>{
+selectedProduct={id:doc.id,...doc.data()};
+generateQR();
+showModal("buyModal");
+});
+}
+
+function generateQR(){
+let upiLink=`upi://pay?pa=${UPI_ID}&pn=Shree%20Ji%20Tech&am=${selectedProduct.price}&cu=INR`;
+upiQR.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+}
+
+function placeCOD(){
+saveOrder("COD","Pending");
+alert("Order Placed");
+closeModal("buyModal");
+}
+
+function payOnline(){
+let upiLink=`upi://pay?pa=${UPI_ID}&pn=Shree%20Ji%20Tech&am=${selectedProduct.price}&cu=INR`;
+window.location.href=upiLink;
+
+setTimeout(()=>{
+if(confirm("Have you completed payment?")){
+saveOrder("UPI","Verification Pending");
+alert("Order Submitted for Verification");
+closeModal("buyModal");
+}
+},4000);
+}
+
+function saveOrder(payment,status){
+let orderId="ORD"+Date.now();
+let deliveryDate=new Date();
+deliveryDate.setDate(deliveryDate.getDate()+5);
+
+db.collection("orders").add({
+orderId,
+user:localStorage.getItem("userPhone"),
+product:selectedProduct.name,
+price:selectedProduct.price,
+customerName:customerName.value,
+phone:customerPhone.value,
+address:customerAddress.value,
+city:customerCity.value,
+pincode:customerPincode.value,
+payment,
+status,
+deliveryDate:deliveryDate.toDateString(),
+date:Date.now()
+});
+}
+
+/* ADMIN */
+function loadOrders(){
+db.collection("orders").onSnapshot(s=>{
+orderList.innerHTML="";
+let revenue=0,count=0;
+
+s.forEach(doc=>{
+let o=doc.data();
+count++;
+if(o.status==="Paid"||o.status==="Delivered") revenue+=Number(o.price);
+
+orderList.innerHTML+=`
+<div class="order-card">
+🆔 ${o.orderId}<br>
+👤 ${o.customerName}<br>
+📦 ${o.product}<br>
+💰 ₹${o.price}<br>
+💳 ${o.payment}<br>
+Status: ${o.status}<br>
+<select onchange="updateStatus('${doc.id}',this.value)">
+<option ${o.status==="Pending"?"selected":""}>Pending</option>
+<option ${o.status==="Verification Pending"?"selected":""}>Verification Pending</option>
+<option ${o.status==="Paid"?"selected":""}>Paid</option>
+<option ${o.status==="Shipped"?"selected":""}>Shipped</option>
+<option ${o.status==="Delivered"?"selected":""}>Delivered</option>
+<option ${o.status==="Cancelled"?"selected":""}>Cancelled</option>
+</select>
+</div>`;
+});
+
+orderList.innerHTML=`<h4>Total Orders: ${count}</h4>
+<h4>Total Revenue: ₹${revenue}</h4><hr>`+orderList.innerHTML;
+});
+}
+
+function updateStatus(id,status){
+db.collection("orders").doc(id).update({status});
 }
 
 /* PRODUCT CRUD */
@@ -272,64 +336,9 @@ function deleteProduct(id){
 if(confirm("Delete?")) db.collection("products").doc(id).delete();
 }
 
-/* ORDERS */
-function orderNow(id){
-let user=localStorage.getItem("userPhone");
-if(!user){alert("Login Required");return;}
-
-db.collection("products").doc(id).get().then(doc=>{
-let p=doc.data();
-db.collection("orders").add({
-user,item:p.name,price:p.price,status:"Pending",date:Date.now()
-});
-alert("Order Placed");
-});
-}
-
-function payNow(id){
-let user=localStorage.getItem("userPhone");
-if(!user){alert("Login Required");return;}
-
-db.collection("products").doc(id).get().then(doc=>{
-let p=doc.data();
-new Razorpay({
-key:"YOUR_RAZORPAY_KEY",
-amount:p.price*100,
-currency:"INR",
-name:"Shree Ji Tech",
-description:p.name,
-handler:function(res){
-db.collection("orders").add({
-user,item:p.name,price:p.price,status:"Paid",
-paymentId:res.razorpay_payment_id,
-date:Date.now()
-});
-alert("Payment Successful");
-}
-}).open();
-});
-}
-
-function loadOrders(){
-db.collection("orders").onSnapshot(s=>{
-orderList.innerHTML="";
-s.forEach(doc=>{
-let o=doc.data();
-orderList.innerHTML+=`
-<div class="order-card">
-👤 ${o.user}<br>
-📦 ${o.item}<br>
-💰 ₹${o.price}<br>
-🟡 ${o.status}
-</div>`;
-});
-});
-}
-
+/* MY ORDERS */
 function showMyOrders(){
 let user=localStorage.getItem("userPhone");
-if(!user){alert("Login Required");return;}
-
 db.collection("orders").where("user","==",user)
 .onSnapshot(s=>{
 myOrdersList.innerHTML="";
@@ -337,9 +346,11 @@ s.forEach(doc=>{
 let o=doc.data();
 myOrdersList.innerHTML+=`
 <div class="order-card">
-📦 ${o.item}<br>
+🆔 ${o.orderId}<br>
+📦 ${o.product}<br>
 💰 ₹${o.price}<br>
-🟡 ${o.status}
+🚚 ${o.deliveryDate}<br>
+Status: ${o.status}
 </div>`;
 });
 });
@@ -357,6 +368,5 @@ function closeModal(id){document.getElementById(id).style.display="none"}
 
 window.onload=loadData;
 </script>
-
 </body>
 </html>
