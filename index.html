@@ -17,7 +17,7 @@
 --glass:rgba(255,255,255,0.05);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{background:var(--bg);color:white;padding-bottom:100px}
+body{background:var(--bg);color:white;padding-bottom:120px}
 header{background:rgba(0,0,0,.4);padding:12px;display:flex;justify-content:space-between;align-items:center}
 .logo-area{display:flex;align-items:center;gap:10px}
 .logo-area img{height:50px;width:50px;border-radius:50%;border:2px solid var(--red)}
@@ -27,6 +27,9 @@ header{background:rgba(0,0,0,.4);padding:12px;display:flex;justify-content:space
 .price{color:var(--green);font-weight:bold;margin:5px 0}
 .btn{background:linear-gradient(45deg,var(--red),#ff758f);border:none;padding:10px;border-radius:10px;color:white;font-weight:bold;margin:4px 0;width:100%;cursor:pointer}
 input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;background:#1e293b;color:white}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999}
+.box{background:#111827;padding:20px;border-radius:16px;width:90%;max-width:400px}
+.login-icon{cursor:pointer;font-size:22px}
 </style>
 </head>
 <body>
@@ -39,22 +42,39 @@ input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;backgro
 <p id="welcomeMsg" style="font-size:10px">Welcome Guest</p>
 </div>
 </div>
+
 <div>
+<span class="login-icon" onclick="showModal('loginModal')">👤</span>
 <button id="logoutBtn" class="btn" style="display:none;background:#444;width:auto" onclick="logoutUser()">Logout</button>
+<button id="adminBtn" class="btn" style="display:none;width:auto" onclick="showModal('adminPanel')">Admin</button>
 </div>
 </header>
 
-<!-- MOBILE LOGIN BOX -->
-<div id="loginBox" style="position:fixed;top:10px;right:10px;width:270px;background:#111827;padding:15px;border-radius:10px;z-index:1000">
+<div class="grid" id="productGrid"></div>
 
-<h4>Mobile Login</h4>
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="modal">
+<div class="box">
+<h3>Mobile Login</h3>
 <input id="phone" value="+91" onfocus="if(this.value=='+91')this.setSelectionRange(3,3)">
-<div id="recaptcha-container"></div>
-<button class="btn" onclick="sendOTP()">Send OTP</button>
-
+<input id="password" type="password" placeholder="Enter / Set Password">
+<button class="btn" onclick="handleAuth()">Continue</button>
+<button class="btn" style="background:#444" onclick="closeModal('loginModal')">Close</button>
+</div>
 </div>
 
-<div class="grid" id="productGrid"></div>
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="modal">
+<div class="box">
+<h3>Add Product</h3>
+<input id="pName" placeholder="Name">
+<input id="pPrice" type="number" placeholder="Price">
+<input id="pImg" placeholder="Image URL">
+<button class="btn" onclick="saveProduct()">Save</button>
+<div id="orderList"></div>
+<button class="btn" style="background:#444" onclick="closeModal('adminPanel')">Close</button>
+</div>
+</div>
 
 <script>
 firebase.initializeApp({
@@ -64,48 +84,58 @@ projectId:"shree-4c33e"
 });
 
 const db=firebase.firestore();
-const ADMIN_PHONE="+919999999999"; // 👈 apna admin number daal do
+const ADMIN_NUMBER="7052055713";
 
 let currentUser=null;
-let selectedProduct=null;
-let confirmationResult=null;
 
 /* AUTH STATE */
 firebase.auth().onAuthStateChanged(user=>{
 if(user){
-currentUser=user.phoneNumber;
-loginBox.style.display="none";
-logoutBtn.style.display="block";
-welcomeMsg.innerText="Logged in: "+currentUser;
+currentUser=user;
+let number=user.email.replace("@shreeji.com","");
+welcomeMsg.innerText="Logged in: +91"+number;
+logoutBtn.style.display="inline-block";
+
+if(number===ADMIN_NUMBER){
+adminBtn.style.display="inline-block";
+loadOrders();
+}
 }
 loadProducts();
 });
 
-/* RECAPTCHA */
-window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'normal'});
+/* MOBILE LOGIN SYSTEM */
+function handleAuth(){
 
-/* SEND OTP */
-function sendOTP(){
-let ph=phone.value.trim();
+let phone=document.getElementById("phone").value.trim();
+let pass=document.getElementById("password").value.trim();
 
-if(!ph.startsWith("+91")||ph.length<13){
+if(!phone.startsWith("+91") || phone.length<13){
 alert("Enter valid number");
 return;
 }
 
-firebase.auth().signInWithPhoneNumber(ph,window.recaptchaVerifier)
-.then(result=>{
-confirmationResult=result;
-let otp=prompt("Enter OTP");
-if(!otp)return;
+let number=phone.replace("+91","");
+let email=number+"@shreeji.com";
 
-confirmationResult.confirm(otp)
-.catch(()=>alert("Invalid OTP"));
-})
+firebase.auth().fetchSignInMethodsForEmail(email)
+.then(methods=>{
+
+if(methods.length===0){
+// Register
+firebase.auth().createUserWithEmailAndPassword(email,pass)
+.then(()=>alert("Account Created"))
 .catch(e=>alert(e.message));
 }
+else{
+// Login
+firebase.auth().signInWithEmailAndPassword(email,pass)
+.catch(()=>alert("Wrong Password"));
+}
 
-/* LOGOUT */
+});
+}
+
 function logoutUser(){
 firebase.auth().signOut();
 location.reload();
@@ -117,64 +147,45 @@ db.collection("products").onSnapshot(s=>{
 productGrid.innerHTML="";
 s.forEach(doc=>{
 let p=doc.data();
-
-let btn="";
-if(currentUser===ADMIN_PHONE){
-btn=`<button class="btn" onclick="deleteProduct('${doc.id}')">Delete</button>`;
-}else{
-btn=`<button class="btn" onclick="buyProduct('${doc.id}',${p.stock||0})">Buy</button>
-<p>Stock: ${p.stock||0}</p>`;
-}
-
 productGrid.innerHTML+=`
 <div class="card">
 <img src="${p.img||''}">
 <p>${p.name}</p>
 <div class="price">₹${p.price}</div>
-${btn}
 </div>`;
 });
 });
 }
 
-function buyProduct(id,stock){
-
-if(currentUser===ADMIN_PHONE){
-alert("Admin cannot buy");
-return;
-}
-
-if(stock<=0){
-alert("Out of stock");
-return;
-}
-
-db.collection("products").doc(id).get().then(doc=>{
-selectedProduct={id:doc.id,...doc.data()};
-placeOrder();
-});
-}
-
-function placeOrder(){
-db.collection("orders").add({
-orderId:"ORD"+Date.now(),
-user:currentUser,
-product:selectedProduct.name,
-price:selectedProduct.price,
-status:"Pending",
+function saveProduct(){
+db.collection("products").add({
+name:pName.value,
+price:Number(pPrice.value),
+img:pImg.value,
 date:Date.now()
 });
-
-db.collection("products").doc(selectedProduct.id)
-.update({stock:firebase.firestore.FieldValue.increment(-1)});
-
-alert("Order Placed");
+alert("Product Added");
 }
 
-/* ADMIN DELETE */
-function deleteProduct(id){
-db.collection("products").doc(id).delete();
+/* ADMIN ORDERS */
+function loadOrders(){
+db.collection("orders").onSnapshot(s=>{
+orderList.innerHTML="<h4>All Orders</h4>";
+s.forEach(doc=>{
+let o=doc.data();
+orderList.innerHTML+=`
+<div style="background:#1e293b;padding:8px;margin:5px 0;border-radius:8px;font-size:12px">
+🆔 ${o.orderId}<br>
+👤 ${o.customerName}<br>
+💰 ₹${o.price}<br>
+Status: ${o.status}
+</div>`;
+});
+});
 }
+
+function showModal(id){document.getElementById(id).style.display="flex"}
+function closeModal(id){document.getElementById(id).style.display="none"}
 </script>
 
 </body>
