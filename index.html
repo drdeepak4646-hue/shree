@@ -3,252 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shree Ji Tech | Krishna Edition</title>
+    <title>Shree Ji Tech | Profile Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
 
     <style>
-        :root { 
-            --skyblue: #87CEEB; 
-            --darkblue: #005f73; 
-            --red: #e63946; 
-            --white: #ffffff; 
-            --gold: #ffd700;
-        }
+        :root { --skyblue: #87CEEB; --darkblue: #005f73; --red: #e63946; --white: #ffffff; --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        
         body { background: var(--skyblue); min-height: 100vh; padding-bottom: 100px; overflow-x: hidden; }
-
-        /* BACKROUND IMAGE LOOP WAPAS ADD KIYA */
-        .bg-loop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background-size: cover; background-position: center;
-            filter: brightness(0.6); animation: slideBg 25s infinite ease-in-out;
-        }
+        
+        .bg-loop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-size: cover; background-position: center; filter: brightness(0.6); animation: slideBg 25s infinite ease-in-out; }
         @keyframes slideBg {
-            0% { background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1500'); }
-            33% { background-image: url('https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?q=80&w=1500'); }
-            66% { background-image: url('https://images.unsplash.com/photo-1454165205744-3b78555e5572?q=80&w=1500'); }
-            100% { background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1500'); }
+            0%, 100% { background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1500'); }
+            50% { background-image: url('https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=1500'); }
         }
 
-        /* HEADER */
-        header { 
-            background: var(--darkblue); 
-            padding: 10px 15px; 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000; 
-            border-bottom: 3px solid var(--red); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-
+        header { background: var(--darkblue); padding: 10px 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--red); display: flex; justify-content: space-between; align-items: center; }
         .logo-section { display: flex; align-items: center; gap: 10px; }
         .logo-text h1 { color: var(--red); font-size: 18px; font-weight: 900; text-shadow: 1px 1px 0px #fff; }
+        .bansuri { width: 60px; animation: bansuriFloat 3s infinite ease-in-out; }
+        @keyframes bansuriFloat { 0%, 100% { transform: rotate(-15deg); } 50% { transform: rotate(-5deg) translateY(-5px); } }
 
-        /* MOVING BANSURI (FLUTE) */
-        .bansuri {
-            width: 60px;
-            height: auto;
-            animation: bansuriFloat 3s infinite ease-in-out;
-            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3));
-        }
-
-        @keyframes bansuriFloat {
-            0%, 100% { transform: rotate(-15deg) translateY(0); }
-            50% { transform: rotate(-5deg) translateY(-5px); }
-        }
-
-        /* SEARCH & CHIPS */
         .top-tools { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 10px; position: sticky; top: 55px; z-index: 999; }
-        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--red); outline: none; margin-bottom: 10px; color: var(--red); font-weight: bold; background: white; }
-        
-        .filter-scroll { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 5px; scrollbar-width: none; }
-        .chip { background: white; color: var(--red); padding: 6px 15px; border-radius: 20px; font-size: 12px; white-space: nowrap; border: 1px solid var(--red); font-weight: bold; cursor: pointer; }
-        .chip.active { background: var(--red); color: white; }
-
-        /* PRODUCT GRID */
+        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--red); outline: none; margin-bottom: 10px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
-        .card { background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 12px; text-align: center; border: 2px solid var(--red); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .card img { height: 100px; width: 100%; object-fit: contain; margin-bottom: 8px; border-radius: 8px; }
-        .card p { color: var(--red); font-weight: bold; font-size: 13px; height: 35px; overflow: hidden; }
-        .price { color: var(--darkblue); font-size: 15px; font-weight: 900; margin: 5px 0; }
-        .add-btn { background: var(--red); color: white; border: none; width: 100%; padding: 8px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .card { background: rgba(255,255,255,0.9); padding: 10px; border-radius: 12px; text-align: center; border: 2px solid var(--red); }
+        .card img { height: 100px; width: 100%; object-fit: contain; }
+        .add-btn { background: var(--red); color: white; border: none; width: 100%; padding: 8px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 5px; }
 
-        /* BOTTOM NAV */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--darkblue); display: flex; justify-content: space-around; padding: 12px; border-top: 3px solid var(--red); z-index: 1001; }
-        .nav-item { color: white; text-align: center; font-size: 11px; cursor: pointer; text-decoration: none; }
+        .nav-item { color: white; text-align: center; font-size: 11px; cursor: pointer; }
 
-        /* MODALS */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
-        .box { background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: 15px; border: 3px solid var(--red); position: relative; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-top: 10px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
+        .box { background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: 15px; border: 3px solid var(--red); }
+        .profile-card { border: 1px solid #ddd; padding: 10px; border-radius: 10px; margin-top: 10px; background: #f9f9f9; }
+        .order-item { font-size: 12px; border-bottom: 1px dashed #ccc; padding: 5px 0; }
     </style>
 </head>
 <body>
-
     <div class="bg-loop"></div>
-
     <header>
         <div class="logo-section">
             <div class="logo-text"><h1>SHREE JI <span>TECH</span></h1></div>
-            <svg class="bansuri" viewBox="0 0 200 60">
-                <rect x="10" y="25" width="150" height="8" rx="4" fill="#8B4513" />
-                <circle cx="30" cy="29" r="1.5" fill="black" />
-                <circle cx="50" cy="29" r="1.5" fill="black" />
-                <circle cx="70" cy="29" r="1.5" fill="black" />
-                <circle cx="90" cy="29" r="1.5" fill="black" />
-                <path d="M140 25 Q160 0 180 15 Q160 30 140 25" fill="#006400" />
-                <circle cx="160" cy="15" r="5" fill="#0000FF" />
-                <path d="M140 25 L155 18" stroke="#ffd700" stroke-width="1" />
-            </svg>
+            <svg class="bansuri" viewBox="0 0 200 60"><rect x="10" y="25" width="150" height="8" rx="4" fill="#8B4513" /><path d="M140 25 Q160 0 180 15 Q160 30 140 25" fill="#006400" /></svg>
         </div>
-        <div class="auth-zone">
-            <button id="adminBtn" style="display:none; background:#28a745; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:10px;" onclick="toggleAdmin()">ADMIN</button>
-            <span id="userDisplay"><button style="background:var(--red); color:white; border:none; padding:5px 12px; border-radius:15px; font-size:12px;" onclick="showLogin()">Login</button></span>
-        </div>
+        <button id="adminBtn" style="display:none; background:#28a745; color:white; border:none; padding:5px 10px; border-radius:5px;" onclick="toggleAdmin()">ADMIN</button>
     </header>
 
     <div class="top-tools">
-        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search Laptop, Service..." oninput="searchItems()">
-        <div class="filter-scroll">
-            <div class="chip active" onclick="filterCat('All', this)">All Items</div>
-            <div class="chip" onclick="filterCat('Laptop', this)">Laptops</div>
-            <div class="chip" onclick="filterCat('Mobile', this)">Mobiles</div>
-            <div class="chip" onclick="filterCat('Sewa', this)">Jan Sewa Kendra</div>
-        </div>
+        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search Items..." oninput="searchItems()">
     </div>
 
     <div class="grid" id="productGrid"></div>
 
+    <div id="profileModal" class="modal"><div class="box">
+        <h3 style="color:var(--red)">My Profile</h3>
+        <div class="profile-card">
+            <p><strong>Phone:</strong> <span id="profPhone"></span></p>
+            <p><strong>Member Since:</strong> <span id="profDate"></span></p>
+        </div>
+        <h4 style="margin-top:15px; color:var(--darkblue)">My Orders</h4>
+        <div id="myOrdersList" style="max-height:150px; overflow-y:auto; margin-bottom:10px;"></div>
+        <button class="add-btn" onclick="logout()">LOGOUT</button>
+        <button onclick="closeModal('profileModal')" style="margin-top:10px; background:none; border:none; color:gray; width:100%;">Close</button>
+    </div></div>
+
     <div id="loginModal" class="modal"><div class="box">
         <h3 style="color:var(--red)">Login</h3>
-        <div id="phoneStep">
-            <input type="number" id="uPhone" placeholder="Mobile Number">
-            <div id="recaptcha-container"></div>
-            <button class="add-btn" style="margin-top:10px" onclick="getOTP()">Send OTP</button>
-        </div>
-        <div id="otpStep" style="display:none;">
-            <input type="number" id="uOTP" placeholder="Enter OTP">
-            <button class="add-btn" style="margin-top:10px" onclick="verifyOTP()">Verify</button>
-        </div>
-        <button onclick="closeModal('loginModal')" style="margin-top:10px; background:none; border:none; color:gray; width:100%;">Close</button>
-    </div></div>
-
-    <div id="adminModal" class="modal"><div class="box">
-        <h3 style="color:var(--red)">Add New Item</h3>
-        <input type="text" id="pName" placeholder="Name">
-        <input type="number" id="pPrice" placeholder="Price">
-        <select id="pCat">
-            <option value="Laptop">Laptop</option>
-            <option value="Mobile">Mobile</option>
-            <option value="Sewa">Jan Sewa Service</option>
-        </select>
-        <input type="text" id="pImg" placeholder="Image URL">
-        <button class="add-btn" style="margin-top:10px" onclick="addItem()">Add to Store</button>
-        <div id="orderLogs" style="margin-top:15px; font-size:10px; max-height:100px; overflow-y:auto; border-top:1px solid #ddd;"></div>
-        <button onclick="closeModal('adminModal')" style="margin-top:10px; background:none; border:none; color:gray; width:100%;">Cancel</button>
-    </div></div>
-
-    <div id="checkoutModal" class="modal"><div class="box">
-        <h3 style="color:var(--red)">Confirm Order</h3>
-        <textarea id="orderAddress" rows="3" placeholder="Pura Address Likhein..."></textarea>
-        <div id="cartSummary" style="margin-top:10px; font-weight:bold; color:var(--red);"></div>
-        <button class="add-btn" style="margin-top:10px" onclick="confirmOrder()">PLACE ORDER</button>
-        <button onclick="closeModal('checkoutModal')" style="margin-top:10px; background:none; border:none; color:gray; width:100%;">Back</button>
+        <input type="number" id="uPhone" placeholder="Mobile Number">
+        <div id="recaptcha-container"></div>
+        <button class="add-btn" onclick="getOTP()">Send OTP</button>
     </div></div>
 
     <div class="bottom-nav">
         <div class="nav-item" onclick="location.reload()">🏠<br>Home</div>
         <div class="nav-item" onclick="openCheckout()">🛒<br>Cart (<span id="count">0</span>)</div>
-        <div class="nav-item" onclick="openCheckout()" style="color:var(--gold)">📦<br>Checkout</div>
+        <div class="nav-item" onclick="showProfile()">👤<br>Profile</div>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBuCywyMgEw_j9yeHD-E4KwRWZGreWagTc",
-            authDomain: "shree-4c33e.firebaseapp.com",
-            projectId: "shree-4c33e",
-            storageBucket: "shree-4c33e.firebasestorage.app",
-            messagingSenderId: "759128544690",
-            appId: "1:759128544690:web:3f57e7ed9117a1acdd80ab"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBuCywyMgEw_j9yeHD-E4KwRWZGreWagTc", authDomain: "shree-4c33e.firebaseapp.com", projectId: "shree-4c33e", storageBucket: "shree-4c33e.firebasestorage.app", messagingSenderId: "759128544690", appId: "1:759128544690:web:3f57e7ed9117a1acdd80ab" };
         firebase.initializeApp(firebaseConfig);
 
-        const ADMIN_NO = "+917052055713";
-        let products = JSON.parse(localStorage.getItem('shreeji_db')) || [
-            {id:1, name:"Refurbished Laptop i5", price:18500, cat:"Laptop", img:"https://m.media-amazon.com/images/I/61N6nN-mRLL._AC_UY218_.jpg"},
-            {id:2, name:"PAN Card Apply", price:150, cat:"Sewa", img:"https://cdn-icons-png.flaticon.com/512/1570/1570887.png"}
-        ];
+        let products = JSON.parse(localStorage.getItem('shreeji_db')) || [{id:1, name:"Laptop i5", price:18500, img:"https://m.media-amazon.com/images/I/61N6nN-mRLL._AC_UY218_.jpg"}];
         let cart = [];
-        let curFilter = "All";
 
-        window.onload = () => { render(); checkUser(); window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {size: 'invisible'}); };
-
-        function render(data = products) {
-            let filtered = curFilter === "All" ? data : data.filter(p => p.cat === curFilter);
-            filtered = filtered.filter(p => !p.name.toLowerCase().includes('iphone'));
-            document.getElementById('productGrid').innerHTML = filtered.map(p => `
+        function render() {
+            document.getElementById('productGrid').innerHTML = products.map(p => `
                 <div class="card">
-                    <img src="${p.img}">
-                    <p>${p.name}</p>
-                    <div class="price">₹${p.price}</div>
-                    <button class="add-btn" onclick="addToCart('${p.name}', ${p.price})">ADD TO CART</button>
-                </div>
-            `).join('');
+                    <img src="${p.img}"><p>${p.name}</p>
+                    <div style="font-weight:bold">₹${p.price}</div>
+                    <button class="add-btn" onclick="addToCart('${p.name}', ${p.price})">ADD</button>
+                </div>`).join('');
         }
 
-        function searchItems() {
-            const t = document.getElementById('searchInput').value.toLowerCase();
-            render(products.filter(p => p.name.toLowerCase().includes(t)));
+        function showProfile() {
+            const user = localStorage.getItem('web_user');
+            if(!user) return showLogin();
+            document.getElementById('profPhone').innerText = user;
+            document.getElementById('profDate').innerText = new Date().toLocaleDateString();
+            
+            // Show User Orders
+            const allOrders = JSON.parse(localStorage.getItem('shreeji_orders')) || [];
+            const myOrders = allOrders.filter(o => o.user === user);
+            document.getElementById('myOrdersList').innerHTML = myOrders.length ? 
+                myOrders.map(o => `<div class="order-item">📦 ${o.items}<br><small>${o.time} - ₹${o.total}</small></div>`).join('') : "No orders yet.";
+            
+            document.getElementById('profileModal').style.display = 'flex';
         }
 
-        function filterCat(c, el) {
-            document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-            el.classList.add('active');
-            curFilter = c; render();
-        }
-
-        function addToCart(n, p) { cart.push({name:n, price:p}); document.getElementById('count').innerText = cart.length; }
-
-        function openCheckout() {
-            if(!localStorage.getItem('web_user')) return showLogin();
-            if(cart.length === 0) return alert("Cart Khali Hai!");
-            document.getElementById('cartSummary').innerText = "Total: ₹" + cart.reduce((s,i)=>s+i.price,0);
-            document.getElementById('checkoutModal').style.display = 'flex';
-        }
-
-        function confirmOrder() {
-            const addr = document.getElementById('orderAddress').value;
-            if(addr.length < 5) return alert("Pura pata likhein!");
-            let orders = JSON.parse(localStorage.getItem('shreeji_orders')) || [];
-            orders.push({user: localStorage.getItem('web_user'), items: cart.map(i=>i.name).join(','), total: cart.reduce((s,i)=>s+i.price,0), addr, time: new Date().toLocaleString()});
-            localStorage.setItem('shreeji_orders', JSON.stringify(orders));
-            alert("Order Success! Hum aapse sampark karenge."); location.reload();
-        }
-
-        function addItem() {
-            const n = document.getElementById('pName').value;
-            const p = document.getElementById('pPrice').value;
-            if(!n || !p) return alert("Details bharein!");
-            products.push({id:Date.now(), name:n, price:parseInt(p), cat:document.getElementById('pCat').value, img:document.getElementById('pImg').value});
-            localStorage.setItem('shreeji_db', JSON.stringify(products)); location.reload();
-        }
-
-        function toggleAdmin() {
-            document.getElementById('adminModal').style.display = 'flex';
-            const logs = JSON.parse(localStorage.getItem('shreeji_orders')) || [];
-            document.getElementById('orderLogs').innerHTML = logs.map(o => `<div style="padding:5px; border-bottom:1px solid #eee;">${o.time} - ${o.user}<br><b>${o.items}</b></div>`).reverse().join('');
-        }
-
+        function logout() { localStorage.removeItem('web_user'); location.reload(); }
         function showLogin() { document.getElementById('loginModal').style.display='flex'; }
         function closeModal(id) { document.getElementById(id).style.display='none'; }
-        function checkUser() { const u = localStorage.getItem('web_user'); if(u){ document.getElementById('userDisplay').innerText = u.slice(-10); if(u === ADMIN_NO) document.getElementById('adminBtn').style.display='inline-block'; } }
-        function getOTP() { let p = "+91" + document.getElementById('uPhone').value; firebase.auth().signInWithPhoneNumber(p, window.recaptchaVerifier).then(r => { confirmation = r; document.getElementById('phoneStep').style.display='none'; document.getElementById('otpStep').style.display='block'; }); }
-        function verifyOTP() { confirmation.confirm(document.getElementById('uOTP').value).then(r => { localStorage.setItem('web_user', r.user.phoneNumber); location.reload(); }); }
+        function addToCart(n, p) { cart.push({name:n, price:p}); document.getElementById('count').innerText = cart.length; }
+        
+        window.onload = render;
     </script>
 </body>
 </html>
