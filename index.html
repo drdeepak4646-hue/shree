@@ -3,181 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shree Ji Tech | Ultimate Edition</title>
+    <title>Shree Ji Tech | All-In-One Enterprise</title>
     <style>
-        :root { --skyblue: #87CEEB; --darkblue: #005f73; --red: #e63946; --white: #ffffff; --green: #28a745; }
+        :root { --skyblue: #87CEEB; --darkblue: #005f73; --red: #e63946; --white: #ffffff; --green: #28a745; --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--skyblue); min-height: 100vh; padding-bottom: 100px; }
+        body { background: var(--skyblue); min-height: 100vh; padding-bottom: 80px; overflow-x: hidden; }
 
+        /* Animations */
+        @keyframes bansuriFloat { 0%, 100% { transform: rotate(-15deg); } 50% { transform: rotate(-5deg); } }
+        
+        /* Header & Admin */
         header { background: var(--darkblue); padding: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--red); display: flex; justify-content: space-between; align-items: center; color: white; }
-        .admin-panel { background: #222; color: white; padding: 8px; font-size: 12px; display: none; justify-content: space-around; align-items: center; }
+        .admin-bar { background: #111; color: #0f0; padding: 10px; font-size: 11px; display: none; flex-direction: column; gap: 8px; border-bottom: 2px solid #0f0; }
         
+        .logo-box { display: flex; align-items: center; gap: 8px; }
+        .bansuri { width: 45px; animation: bansuriFloat 3s infinite ease-in-out; }
+
+        /* Category System */
+        .cat-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 12px; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+        .cat-btn { background: white; border: 1px solid var(--darkblue); padding: 7px 18px; border-radius: 25px; font-size: 13px; font-weight: bold; white-space: nowrap; transition: 0.3s; }
+        .cat-btn.active { background: var(--red); color: white; border-color: var(--red); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        /* Grid */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
-        .card { background: white; padding: 10px; border-radius: 12px; text-align: center; border: 2px solid var(--red); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .card img { height: 80px; width: 100%; object-fit: contain; }
-        
-        .add-btn { background: var(--red); color: white; border: none; width: 100%; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 5px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; overflow-y: auto; }
-        .box { background: white; padding: 20px; width: 92%; max-width: 400px; border-radius: 15px; border: 3px solid var(--red); }
+        .card { background: white; padding: 12px; border-radius: 15px; border: 2px solid var(--red); text-align: center; transition: 0.3s; }
+        .card img { height: 90px; width: 100%; object-fit: contain; margin-bottom: 8px; }
+        .price { color: var(--darkblue); font-weight: 900; font-size: 17px; margin: 4px 0; }
 
-        .profile-dp { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--red); display: block; margin: 0 auto 10px; object-fit: cover; }
-        input, select, textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ccc; border-radius: 8px; }
+        /* Modals & Dashboard */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
+        .box { background: white; padding: 25px; width: 92%; max-width: 450px; border-radius: 20px; border: 4px solid var(--red); max-height: 85vh; overflow-y: auto; }
         
-        .pay-box { border: 2px solid #eee; padding: 10px; border-radius: 10px; margin-top: 10px; cursor: pointer; }
-        .pay-box.active { border-color: var(--green); background: #f0fff0; }
+        .profile-header { text-align: center; margin-bottom: 20px; }
+        .user-dp { width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--red); object-fit: cover; }
+        
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #ddd; border-radius: 10px; outline: none; }
+        .btn-main { background: var(--red); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--darkblue); display: flex; justify-content: space-around; padding: 12px; border-top: 3px solid var(--red); }
-        .nav-item { color: white; text-align: center; font-size: 11px; cursor: pointer; }
+        .order-item { background: #f8f9fa; border: 1.5px solid #eee; padding: 12px; border-radius: 12px; margin-bottom: 12px; }
+        .status-pill { padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: bold; float: right; }
+
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--darkblue); display: flex; justify-content: space-around; padding: 12px; border-top: 3px solid var(--red); z-index: 1001; }
+        .nav-item { color: white; text-align: center; font-size: 11px; cursor: pointer; opacity: 0.8; }
+        .nav-item:hover { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <div class="admin-panel" id="adminBar">
-        <span>COD: <b id="codStatusText">ON</b></span>
-        <button onclick="toggleCOD()" style="padding:2px 10px;">Toggle</button>
+    <div class="admin-bar" id="adminBar">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b>ADMIN DASHBOARD</b>
+            <button onclick="toggleCOD()" id="codToggleBtn" style="padding:2px 10px; font-size:10px;">TOGGLE COD</button>
+        </div>
+        <div id="adminOrdersArea" style="max-height: 150px; overflow-y: auto;"></div>
     </div>
 
-    <header onclick="askAdmin()">
-        <h2 style="color:var(--red)">SHREE JI <span style="color:white">TECH</span></h2>
-        <small>Bichhiya, GKP</small>
+    <header onclick="openAdmin()">
+        <div class="logo-box">
+            <svg class="bansuri" viewBox="0 0 200 60"><rect x="10" y="25" width="150" height="8" rx="4" fill="#8B4513" /><path d="M140 25 Q160 0 180 15 Q160 30 140 25" fill="#006400" /></svg>
+            <h2 style="font-size:18px;">SHREE JI <span style="color:var(--red)">TECH</span></h2>
+        </div>
+        <div id="codTag" style="font-size:9px; background:var(--green); padding:3px 6px; border-radius:4px; font-weight:bold;">COD ACTIVE</div>
     </header>
+
+    <div class="cat-scroll" id="categoryMenu">
+        <div class="cat-btn active" onclick="filterItems('All', this)">All Items</div>
+        <div class="cat-btn" onclick="filterItems('Laptop', this)">Laptops</div>
+        <div class="cat-btn" onclick="filterItems('Jan Sewa', this)">Jan Sewa</div>
+        <div class="cat-btn" onclick="filterItems('Mobile', this)">Accessories</div>
+    </div>
 
     <div class="grid" id="productGrid"></div>
 
     <div id="profileModal" class="modal"><div class="box">
-        <h3 style="text-align:center">My Profile</h3>
-        <img id="displayDP" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-dp">
-        <input type="text" id="profDP" placeholder="Paste Photo Link (URL)">
-        <input type="text" id="profEmail" placeholder="Email Address (Optional)">
-        <select id="profGender">
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-        </select>
-        <button class="add-btn" onclick="saveProfile()" style="background:var(--darkblue)">UPDATE PROFILE</button>
-        <button class="add-btn" onclick="logout()" style="background:#666">LOGOUT</button>
-        <button onclick="closeModal('profileModal')" style="width:100%; background:none; border:none; margin-top:10px; color:gray;">Close</button>
+        <div class="profile-header">
+            <img id="avatarImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="user-dp">
+            <h4 id="userDisplayPhone" style="margin-top:5px;">User</h4>
+        </div>
+        
+        <input type="text" id="upDP" placeholder="Photo Link (Optional)">
+        <input type="email" id="upEmail" placeholder="Email Address">
+        <select id="upGender"><option>Male</option><option>Female</option><option>Other</option></select>
+        <button class="btn-main" style="background:var(--darkblue); padding:8px; font-size:12px;" onclick="saveProfile()">Update Profile</button>
+        
+        <h4 style="margin-top:20px; border-left:4px solid var(--red); padding-left:10px;">My Orders & Tracking</h4>
+        <div id="customerOrdersList" style="margin-top:10px;"></div>
+
+        <button class="btn-main" style="background:#555; margin-top:15px;" onclick="logout()">Logout</button>
+        <button onclick="closeModal('profileModal')" style="width:100%; border:none; background:none; margin-top:15px; color:gray;">Close</button>
     </div></div>
 
     <div id="checkoutModal" class="modal"><div class="box">
-        <h3>Checkout</h3>
-        <div id="sewaDocs" style="display:none; background:#fff3f3; padding:10px; border:1px dashed var(--red); margin:10px 0;">
-            <p style="font-size:12px; color:var(--red)">📄 Upload Documents (Aadhar/Photo)</p>
-            <input type="file" id="userDoc">
+        <h3 style="color:var(--darkblue)">Secure Checkout</h3>
+        <div id="docUploadSection" style="display:none; padding:12px; background:#fff5f5; border:1.5px dashed var(--red); border-radius:10px; margin:10px 0;">
+            <p style="font-size:11px; color:var(--red); font-weight:bold;">📄 Jan Sewa Document Required:</p>
+            <input type="file" id="serviceDoc">
         </div>
 
-        <div class="pay-box active" id="optOnline" onclick="setMethod('Online')">📱 Online Payment (QR)</div>
-        <div class="pay-box" id="optCOD" onclick="setMethod('COD')">💵 Cash on Delivery</div>
+        <p style="margin-top:10px; font-weight:bold;">Choose Payment:</p>
+        <select id="paymentChoice" onchange="togglePayView()">
+            <option value="Online">Online Payment (UPI QR)</option>
+            <option value="COD" id="codSelection">Cash on Delivery</option>
+        </select>
 
-        <div id="qrDiv" style="text-align:center; margin-top:10px;">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=dr.deepak2121-2@oksbi&pn=Deepak%20Singh" style="width:130px;">
-            <p style="font-size:11px;">Pay to: <b>Deepak Singh</b></p>
-            <input type="file" id="payScreenshot" style="font-size:11px;">
-            <small>Upload Screenshot after payment</small>
+        <div id="qrContainer" style="text-align:center; padding:15px; border:1px solid #eee; border-radius:12px;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=dr.deepak2121-2@oksbi&pn=Deepak%20Singh" style="width:140px;">
+            <p style="font-size:12px; margin:5px 0;"><b>Deepak Singh</b> (dr.deepak2121-2@oksbi)</p>
+            <input type="file" id="payShot" style="font-size:10px;">
+            <small>Upload Payment Screenshot</small>
         </div>
 
-        <textarea id="orderAddress" placeholder="Enter Full Address for Delivery"></textarea>
-        <button class="add-btn" onclick="confirmOrder()">PLACE ORDER</button>
-        <button onclick="closeModal('checkoutModal')" style="width:100%; background:none; border:none; margin-top:10px; color:gray;">Cancel</button>
+        <textarea id="deliveryAddress" placeholder="Enter Full Address + Pin Code" rows="3"></textarea>
+        <button class="btn-main" onclick="finalizeOrder()">Place Order Now</button>
     </div></div>
 
     <div id="loginModal" class="modal"><div class="box">
-        <h3>Login to Continue</h3>
-        <input type="number" id="loginPhone" placeholder="Enter Mobile Number">
-        <button class="add-btn" onclick="doLogin()">LOGIN</button>
+        <h3 style="text-align:center; color:var(--red);">Welcome to Shree Ji</h3>
+        <p style="text-align:center; font-size:12px; margin-bottom:15px;">Login with phone to continue</p>
+        <input type="number" id="phLogin" placeholder="10 Digit Mobile Number">
+        <button class="btn-main" onclick="processLogin()">LOGIN</button>
     </div></div>
 
     <div class="bottom-nav">
         <div class="nav-item" onclick="location.reload()">🏠<br>Home</div>
-        <div class="nav-item" onclick="openCheckout()">🛒<br>Cart (<span id="cartCount">0</span>)</div>
-        <div class="nav-item" onclick="showProfile()">👤<br>Profile</div>
+        <div class="nav-item" onclick="openCheckout()">🛒<br>Cart (<span id="cartVal">0</span>)</div>
+        <div class="nav-item" onclick="showProfile()">📦<br>Tracking</div>
     </div>
 
     <script>
-        let items = [
-            {id:1, name:"Refurbished i5", price:18500, cat:"Tech", img:"https://m.media-amazon.com/images/I/61N6nN-mRLL._AC_UY218_.jpg"},
-            {id:2, name:"PAN Card Apply", price:150, cat:"Sewa", img:"https://cdn-icons-png.flaticon.com/512/1570/1570887.png"},
-            {id:3, name:"Income Certificate", price:100, cat:"Sewa", img:"https://cdn-icons-png.flaticon.com/512/2850/2850387.png"}
+        let db = [
+            {id:1, n:"Refurbished Laptop i5", p:18500, c:"Laptop", img:"https://m.media-amazon.com/images/I/61N6nN-mRLL._AC_UY218_.jpg"},
+            {id:2, n:"PAN Card Service", p:150, c:"Jan Sewa", img:"https://cdn-icons-png.flaticon.com/512/1570/1570887.png"},
+            {id:3, n:"Income/Caste Certificate", p:100, c:"Jan Sewa", img:"https://cdn-icons-png.flaticon.com/512/2850/2850387.png"},
+            {id:4, n:"Wireless Mouse", p:350, c:"Mobile", img:"https://m.media-amazon.com/images/I/516m4F8k7TL._AC_UY218_.jpg"}
         ];
         let cart = [];
-        let method = 'Online';
-        let codEnabled = localStorage.getItem('cod_active') !== 'false';
+        let codEnabled = localStorage.getItem('cod_master') !== 'false';
 
-        function render() {
-            document.getElementById('productGrid').innerHTML = items.map(i => `
+        function render(cat = 'All') {
+            const grid = document.getElementById('productGrid');
+            const data = cat === 'All' ? db : db.filter(x => x.c === cat);
+            grid.innerHTML = data.map(i => `
                 <div class="card">
-                    <img src="${i.img}">
-                    <p style="font-size:13px; height:35px;">${i.name}</p>
-                    <b style="color:var(--darkblue)">₹${i.price}</b>
-                    <button class="add-btn" onclick="addToCart('${i.name}', ${i.price}, '${i.cat}')">ADD</button>
+                    <img src="${i.img}"><p style="font-size:12px; height:32px; overflow:hidden;">${i.n}</p>
+                    <div class="price">₹${i.p}</div>
+                    <button class="btn-main" style="padding:6px; font-size:11px;" onclick="addToCart('${i.n}', ${i.p}, '${i.c}')">ADD TO CART</button>
                 </div>`).join('');
-            document.getElementById('codStatusText').innerText = codEnabled ? "ON" : "OFF";
+            document.getElementById('codTag').innerText = codEnabled ? "COD ACTIVE" : "COD DISABLED";
+            document.getElementById('codTag').style.background = codEnabled ? "var(--green)" : "var(--red)";
         }
 
-        function addToCart(n, p, c) { cart.push({n, p, c}); document.getElementById('cartCount').innerText = cart.length; }
-
-        function openCheckout() {
-            if(!localStorage.getItem('user')) return showModal('loginModal');
-            if(cart.length === 0) return alert("Cart khali hai!");
-            const needsDoc = cart.some(i => i.c === 'Sewa');
-            document.getElementById('sewaDocs').style.display = needsDoc ? 'block' : 'none';
-            document.getElementById('checkoutModal').style.display = 'flex';
+        function filterItems(c, b) {
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            b.classList.add('active');
+            render(c);
         }
 
-        function setMethod(m) {
-            if(m === 'COD' && !codEnabled) return alert("COD abhi band hai!");
-            method = m;
-            document.getElementById('optOnline').className = m==='Online' ? 'pay-box active' : 'pay-box';
-            document.getElementById('optCOD').className = m==='COD' ? 'pay-box active' : 'pay-box';
-            document.getElementById('qrDiv').style.display = m==='Online' ? 'block' : 'none';
-        }
-
-        function toggleCOD() {
-            codEnabled = !codEnabled;
-            localStorage.setItem('cod_active', codEnabled);
-            render();
-        }
-
-        function askAdmin() {
-            if(prompt("Admin Password?") === "shree713") document.getElementById('adminBar').style.display = 'flex';
-        }
+        function addToCart(n, p, c) { cart.push({n, p, c}); document.getElementById('cartVal').innerText = cart.length; }
 
         function showProfile() {
             const u = localStorage.getItem('user');
             if(!u) return showModal('loginModal');
-            const p = JSON.parse(localStorage.getItem('profile_'+u)) || {};
-            document.getElementById('displayDP').src = p.dp || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            document.getElementById('profEmail').value = p.email || '';
-            document.getElementById('profGender').value = p.gender || 'Male';
+            document.getElementById('userDisplayPhone').innerText = u;
+            
+            const prof = JSON.parse(localStorage.getItem('p_'+u)) || {};
+            if(prof.dp) document.getElementById('avatarImg').src = prof.dp;
+            document.getElementById('upDP').value = prof.dp || '';
+            document.getElementById('upEmail').value = prof.email || '';
+            document.getElementById('upGender').value = prof.gender || 'Male';
+
+            const orders = JSON.parse(localStorage.getItem('master_orders')) || [];
+            const myOrders = orders.filter(o => o.u === u);
+            document.getElementById('customerOrdersList').innerHTML = myOrders.map(o => `
+                <div class="order-item">
+                    <span class="status-pill" style="background:${o.s==='Delivered'?'#28a745':'#ffd700'}">${o.s}</span>
+                    <b>#ORD-${o.id}</b><br>
+                    <small>${o.items}</small><br>
+                    <p style="color:var(--red); font-size:11px; margin-top:5px; font-weight:bold;">🚚 Tracking: ${o.t || 'Awaiting Dispatch'}</p>
+                </div>`).reverse().join('') || "<p style='font-size:12px; color:gray;'>No orders yet.</p>";
             showModal('profileModal');
         }
 
         function saveProfile() {
             const u = localStorage.getItem('user');
-            const data = { dp: document.getElementById('profDP').value, email: document.getElementById('profEmail').value, gender: document.getElementById('profGender').value };
-            localStorage.setItem('profile_'+u, JSON.stringify(data));
-            alert("Profile Updated!");
+            const data = { dp: document.getElementById('upDP').value, email: document.getElementById('upEmail').value, gender: document.getElementById('upGender').value };
+            localStorage.setItem('p_'+u, JSON.stringify(data));
+            alert("Profile Saved!");
+            showProfile();
+        }
+
+        function openAdmin() {
+            if(prompt("Admin Access Code:") === "shree713") {
+                document.getElementById('adminBar').style.display = 'block';
+                loadAdminOrders();
+            }
+        }
+
+        function loadAdminOrders() {
+            const orders = JSON.parse(localStorage.getItem('master_orders')) || [];
+            document.getElementById('adminOrdersArea').innerHTML = orders.map((o, i) => `
+                <div style="background:#222; margin-top:5px; padding:8px; border:1px solid #444;">
+                    <small>User: ${o.u} | Total: ₹${o.total}</small><br>
+                    <select onchange="changeStatus(${i}, this.value)" style="width:45%; padding:2px;">
+                        <option ${o.s==='Pending'?'selected':''}>Pending</option>
+                        <option ${o.s==='Shipped'?'selected':''}>Shipped</option>
+                        <option ${o.s==='Delivered'?'selected':''}>Delivered</option>
+                    </select>
+                    <input type="text" placeholder="Track ID" value="${o.t||''}" onchange="changeTrack(${i}, this.value)" style="width:50%; padding:2px; margin:0;">
+                </div>`).reverse().join('');
+        }
+
+        function changeStatus(idx, v) { 
+            let o = JSON.parse(localStorage.getItem('master_orders')); 
+            o[o.length-1-idx].s = v; 
+            localStorage.setItem('master_orders', JSON.stringify(o)); 
+        }
+
+        function changeTrack(idx, v) { 
+            let o = JSON.parse(localStorage.getItem('master_orders')); 
+            o[o.length-1-idx].t = v; 
+            localStorage.setItem('master_orders', JSON.stringify(o)); 
+        }
+
+        function toggleCOD() {
+            codEnabled = !codEnabled;
+            localStorage.setItem('cod_master', codEnabled);
             location.reload();
         }
 
-        function confirmOrder() {
-            alert("Order Successful! Deepak Singh aapse jaldi contact karenge.");
+        function openCheckout() {
+            if(!localStorage.getItem('user')) return showModal('loginModal');
+            if(cart.length === 0) return alert("Cart khali hai!");
+            document.getElementById('docUploadSection').style.display = cart.some(i => i.c === 'Jan Sewa') ? 'block' : 'none';
+            document.getElementById('codSelection').disabled = !codEnabled;
+            showModal('checkoutModal');
+        }
+
+        function finalizeOrder() {
+            let orders = JSON.parse(localStorage.getItem('master_orders')) || [];
+            orders.push({
+                id: Math.floor(10000 + Math.random() * 90000),
+                u: localStorage.getItem('user'),
+                items: cart.map(i => i.n).join(', '),
+                total: cart.reduce((a,b) => a+b.p, 0),
+                s: 'Pending',
+                t: '',
+                pay: document.getElementById('paymentChoice').value
+            });
+            localStorage.setItem('master_orders', JSON.stringify(orders));
+            alert("Order Confirmed! Deepak Singh will contact you.");
             cart = [];
             location.reload();
         }
 
-        function doLogin() { 
-            const ph = document.getElementById('loginPhone').value;
-            if(ph.length < 10) return alert("Enter valid number");
-            localStorage.setItem('user', ph); 
-            location.reload(); 
+        function processLogin() {
+            const ph = document.getElementById('phLogin').value;
+            if(ph.length === 10) { localStorage.setItem('user', ph); location.reload(); }
+            else alert("Sahi number daalein!");
         }
 
         function logout() { localStorage.removeItem('user'); location.reload(); }
         function showModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        
-        window.onload = render;
+        function togglePayView() { document.getElementById('qrContainer').style.display = document.getElementById('paymentChoice').value === 'Online' ? 'block' : 'none'; }
+
+        window.onload = () => render();
     </script>
 </body>
 </html>
