@@ -27,7 +27,6 @@ header{background:rgba(0,0,0,.4);padding:12px;display:flex;justify-content:space
 .price{color:var(--green);font-weight:bold;margin:5px 0}
 .btn{background:linear-gradient(45deg,var(--red),#ff758f);border:none;padding:10px;border-radius:10px;color:white;font-weight:bold;margin:4px 0;width:100%;cursor:pointer}
 input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;background:#1e293b;color:white}
-.order-card{background:#1e293b;padding:10px;border-radius:10px;margin-bottom:10px;font-size:12px}
 </style>
 </head>
 <body>
@@ -45,21 +44,13 @@ input{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:none;backgro
 </div>
 </header>
 
-<!-- LOGIN BOX -->
+<!-- MOBILE LOGIN BOX -->
 <div id="loginBox" style="position:fixed;top:10px;right:10px;width:270px;background:#111827;padding:15px;border-radius:10px;z-index:1000">
-
-<h4>Email Login</h4>
-<input id="email" placeholder="Email">
-<input id="emailPass" type="password" placeholder="Password">
-<button class="btn" onclick="emailLogin()">Login / Signup</button>
-
-<hr>
 
 <h4>Mobile Login</h4>
 <input id="phone" value="+91" onfocus="if(this.value=='+91')this.setSelectionRange(3,3)">
-<input id="phonePass" type="password" placeholder="Password (after OTP)">
 <div id="recaptcha-container"></div>
-<button class="btn" onclick="mobileLogin()">Continue</button>
+<button class="btn" onclick="sendOTP()">Send OTP</button>
 
 </div>
 
@@ -73,7 +64,7 @@ projectId:"shree-4c33e"
 });
 
 const db=firebase.firestore();
-const ADMIN="admin@gmail.com";
+const ADMIN_PHONE="+919999999999"; // 👈 apna admin number daal do
 
 let currentUser=null;
 let selectedProduct=null;
@@ -82,41 +73,19 @@ let confirmationResult=null;
 /* AUTH STATE */
 firebase.auth().onAuthStateChanged(user=>{
 if(user){
-currentUser=user.email;
+currentUser=user.phoneNumber;
 loginBox.style.display="none";
 logoutBtn.style.display="block";
-
-let display=user.email.includes("@shreeji.com")
-? "+91"+user.email.replace("@shreeji.com","")
-: user.email;
-
-welcomeMsg.innerText="Logged in: "+display;
+welcomeMsg.innerText="Logged in: "+currentUser;
 }
 loadProducts();
 });
 
-/* EMAIL LOGIN */
-function emailLogin(){
-let em=email.value.trim();
-let pw=emailPass.value.trim();
-
-firebase.auth().fetchSignInMethodsForEmail(em)
-.then(methods=>{
-if(methods.length===0){
-firebase.auth().createUserWithEmailAndPassword(em,pw)
-.catch(e=>alert(e.message));
-}else{
-firebase.auth().signInWithEmailAndPassword(em,pw)
-.catch(()=>alert("Wrong Password"));
-}
-});
-}
-
-/* MOBILE LOGIN */
+/* RECAPTCHA */
 window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'normal'});
 
-function mobileLogin(){
-
+/* SEND OTP */
+function sendOTP(){
 let ph=phone.value.trim();
 
 if(!ph.startsWith("+91")||ph.length<13){
@@ -124,71 +93,16 @@ alert("Enter valid number");
 return;
 }
 
-let number=ph.replace("+91","");
-let emailId=number+"@shreeji.com";
-
-firebase.auth().fetchSignInMethodsForEmail(emailId)
-.then(methods=>{
-if(methods.length===0){
-firstTimeOTP(ph,emailId);
-}else{
-passwordLogin(emailId);
-}
-});
-}
-
-function firstTimeOTP(ph,emailId){
 firebase.auth().signInWithPhoneNumber(ph,window.recaptchaVerifier)
 .then(result=>{
 confirmationResult=result;
 let otp=prompt("Enter OTP");
 if(!otp)return;
 
-confirmationResult.confirm(otp).then(()=>{
-let newPass=prompt("Set Password");
-if(!newPass)return;
-
-firebase.auth().createUserWithEmailAndPassword(emailId,newPass)
-.then(()=>{
-alert("Password Saved. Login Again.");
-firebase.auth().signOut();
-});
-});
+confirmationResult.confirm(otp)
+.catch(()=>alert("Invalid OTP"));
 })
 .catch(e=>alert(e.message));
-}
-
-function passwordLogin(emailId){
-let pw=phonePass.value.trim();
-
-firebase.auth().signInWithEmailAndPassword(emailId,pw)
-.catch(()=>{
-if(confirm("Wrong password. Reset via OTP?")){
-resetPassword(emailId);
-}else{
-alert("Wrong Password");
-}
-});
-}
-
-function resetPassword(emailId){
-let ph=phone.value.trim();
-
-firebase.auth().signInWithPhoneNumber(ph,window.recaptchaVerifier)
-.then(result=>{
-confirmationResult=result;
-let otp=prompt("Enter OTP");
-if(!otp)return;
-
-confirmationResult.confirm(otp).then(()=>{
-let newPass=prompt("New Password");
-firebase.auth().currentUser.updatePassword(newPass)
-.then(()=>{
-alert("Password Updated");
-firebase.auth().signOut();
-});
-});
-});
 }
 
 /* LOGOUT */
@@ -205,7 +119,7 @@ s.forEach(doc=>{
 let p=doc.data();
 
 let btn="";
-if(currentUser===ADMIN){
+if(currentUser===ADMIN_PHONE){
 btn=`<button class="btn" onclick="deleteProduct('${doc.id}')">Delete</button>`;
 }else{
 btn=`<button class="btn" onclick="buyProduct('${doc.id}',${p.stock||0})">Buy</button>
@@ -225,7 +139,7 @@ ${btn}
 
 function buyProduct(id,stock){
 
-if(currentUser===ADMIN){
+if(currentUser===ADMIN_PHONE){
 alert("Admin cannot buy");
 return;
 }
