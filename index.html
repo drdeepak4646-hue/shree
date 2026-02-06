@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shree Radhe Tech | Tech Store</title>
+    <title>Shree Radhe Tech | In-App Ordering</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
@@ -11,68 +11,92 @@
     <style>
         :root { --yellow: #ffdb00; --red: #e63946; --black: #121212; --white: #ffffff; --grey: #f4f4f4; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--grey); padding-bottom: 80px; }
+        body { background-color: var(--grey); padding-bottom: 90px; }
 
-        header { background: var(--black); padding: 10px 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--red); display: flex; justify-content: space-between; align-items: center; }
-        .logo-text h1 { color: var(--yellow); font-size: 18px; font-weight: 900; }
+        header { background: var(--black); padding: 12px 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--red); display: flex; justify-content: space-between; align-items: center; }
+        .logo-text h1 { color: var(--yellow); font-size: 16px; font-weight: 900; }
         .logo-text span { color: var(--red); }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
-        .box { background: white; padding: 20px; width: 95%; max-width: 400px; border-radius: 12px; position: relative; }
-        
-        input, button { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px; }
-        .btn-main { background: var(--yellow); font-weight: bold; border: none; cursor: pointer; }
+        .auth-zone { display: flex; align-items: center; gap: 10px; }
+        .login-btn-top { background: var(--red); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; border: none; cursor: pointer; }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .card { background: white; padding: 10px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
+        .box { background: white; padding: 25px; width: 90%; max-width: 400px; border-radius: 15px; position: relative; max-height: 80vh; overflow-y: auto; }
+        
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px; }
+        .btn-main { width: 100%; padding: 12px; background: var(--black); color: white; font-weight: bold; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        .card { background: white; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #eee; }
         .card img { height: 110px; width: 100%; object-fit: contain; }
+        .add-btn { background: var(--yellow); border: none; width: 100%; padding: 7px; font-weight: bold; border-radius: 5px; margin-top: 8px; cursor: pointer; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--black); display: flex; justify-content: space-around; padding: 12px; border-top: 2px solid var(--yellow); }
         .nav-icon { color: white; text-align: center; font-size: 11px; cursor: pointer; }
-        .admin-badge { background: #00ff00; color: black; padding: 2px 8px; border-radius: 20px; font-weight: bold; font-size: 12px; }
+        
+        .order-log { border-bottom: 1px solid #ddd; padding: 10px 0; font-size: 12px; }
+        .success-animation { color: green; font-weight: bold; text-align: center; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo-text"><h1>SHREE RADHE<span>ACCS</span></h1></div>
-        <div id="adminBtn" style="display:none;" onclick="toggleAdmin()"><span class="admin-badge">ADMIN</span></div>
-        <div style="color: white;">🛒 <span id="cartCount">0</span></div>
+        <div class="logo-text"><h1>SHREE RADHE<span>TECH</span></h1></div>
+        <div class="auth-zone">
+            <div id="adminBtn" style="display:none;" onclick="toggleAdmin()"><span style="background:green; color:white; padding:3px 8px; border-radius:5px; font-size:10px;">ADMIN</span></div>
+            <div id="userDisplay"><button class="login-btn-top" onclick="showLogin()">Login</button></div>
+        </div>
     </header>
+
+    <div id="successModal" class="modal">
+        <div class="box" style="text-align:center;">
+            <h1 style="font-size:50px;">✅</h1>
+            <h2>Order Placed!</h2>
+            <p>Aapka order Shree Radhe Tech ko mil gaya hai.</p>
+            <button class="btn-main" onclick="closeModal('successModal')">Continue Shopping</button>
+        </div>
+    </div>
 
     <div id="adminModal" class="modal">
         <div class="box">
-            <span onclick="toggleAdmin()" style="position:absolute; right:15px; top:10px; font-size:25px; cursor:pointer;">&times;</span>
-            <h3>Add Product</h3>
-            <input type="text" id="pName" placeholder="Item Name">
-            <input type="number" id="pPrice" placeholder="Price (₹)">
-            <input type="text" id="pImg" placeholder="PostImages Direct Link">
-            <button class="btn-main" onclick="addProduct()">ADD TO STORE</button>
-            <button onclick="exportData()" style="font-size:10px; background:none; border:none; color:blue;">Backup Data (Copy this)</button>
+            <span onclick="closeModal('adminModal')" style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
+            <h3 style="color:var(--red);">Admin Panel</h3>
+            <div style="margin-top:15px; border:1px solid #eee; padding:10px; border-radius:10px;">
+                <p><b>Add Product:</b></p>
+                <input type="text" id="pName" placeholder="Name">
+                <input type="number" id="pPrice" placeholder="Price">
+                <input type="text" id="pImg" placeholder="Image Link">
+                <button class="btn-main" onclick="saveNewItem()">Add Item</button>
+            </div>
+            <div style="margin-top:20px;">
+                <p><b>Recent Orders (Received on Web):</b></p>
+                <div id="orderHistory">No orders yet.</div>
+            </div>
         </div>
     </div>
 
     <div id="loginModal" class="modal">
         <div class="box">
+            <span onclick="closeModal('loginModal')" style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
             <h2>Login</h2>
             <div id="phoneStep">
-                <input type="number" id="userPhone" placeholder="Mobile Number">
+                <input type="number" id="uPhone" placeholder="Mobile Number">
                 <div id="recaptcha-container"></div>
-                <button class="btn-main" onclick="sendOTP()">SEND OTP</button>
+                <button class="btn-main" onclick="getOTP()">Get OTP</button>
             </div>
             <div id="otpStep" style="display:none;">
-                <input type="number" id="otpCode" placeholder="Enter OTP">
-                <button class="btn-main" onclick="verifyOTP()">VERIFY</button>
+                <input type="number" id="uOTP" placeholder="Enter OTP">
+                <button class="btn-main" onclick="confirmOTP()">Verify</button>
             </div>
         </div>
     </div>
 
-    <div class="grid" id="pGrid"></div>
+    <div class="grid" id="productGrid"></div>
 
     <div class="bottom-nav">
         <div class="nav-icon" onclick="location.reload()">🏠<br>Home</div>
-        <div id="accStatus" class="nav-icon" onclick="handleAccountClick()">👤<br>Account</div>
-        <div class="nav-icon" onclick="sendWhatsApp()">📞<br>Order</div>
+        <div class="nav-icon" onclick="alert('Items in cart: ' + cart.length)">🛒<br>Cart (<span id="count">0</span>)</div>
+        <div class="nav-icon" onclick="placeOrderWeb()" style="color:var(--yellow); font-weight:bold;">📦<br>Place Order</div>
     </div>
 
     <script>
@@ -86,88 +110,110 @@
         };
         firebase.initializeApp(firebaseConfig);
 
-        const OWNER = "+917052055713";
-        let products = JSON.parse(localStorage.getItem('shree_items')) || [
+        const ADMIN_NO = "+917052055713";
+        let items = JSON.parse(localStorage.getItem('web_products')) || [
             { id: 1, name: "Fast Charger", price: 499, img: "https://m.media-amazon.com/images/I/51fMdfA76rL._AC_UY218_.jpg" }
         ];
         let cart = [];
-        let confirmationResult;
+        let confirmation;
 
-        window.onload = function() {
+        window.onload = () => {
             render();
-            checkLogin();
+            updateUI();
             window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
         };
 
         function render() {
-            document.getElementById('pGrid').innerHTML = products.map(p => `
+            document.getElementById('productGrid').innerHTML = items.map(p => `
                 <div class="card">
                     <img src="${p.img}">
-                    <p style="font-size:12px; margin:5px 0;">${p.name}</p>
+                    <p style="font-size:12px; height:35px;">${p.name}</p>
                     <p style="color:red; font-weight:bold;">₹${p.price}</p>
-                    <button class="btn-main" style="padding:5px;" onclick="addToCart('${p.name}', ${p.price})">ADD</button>
+                    <button class="add-btn" onclick="addToCart('${p.name}', ${p.price})">ADD TO CART</button>
                 </div>
             `).join('');
         }
 
-        function addProduct() {
-            const name = document.getElementById('pName').value;
-            const price = document.getElementById('pPrice').value;
-            const img = document.getElementById('pImg').value;
-            if(!name || !price || !img) return alert("Fill all!");
-
-            products.push({ id: Date.now(), name, price, img });
-            localStorage.setItem('shree_items', JSON.stringify(products));
-            alert("Added!");
-            location.reload();
+        function updateUI() {
+            const user = localStorage.getItem('web_user');
+            if(user) {
+                document.getElementById('userDisplay').innerHTML = `<span style="color:var(--yellow); font-size:11px;">${user.slice(-10)}</span>`;
+                if(user === ADMIN_NO) document.getElementById('adminBtn').style.display = 'block';
+            }
         }
 
-        function checkLogin() {
-            const user = localStorage.getItem('user');
-            if(user === OWNER) document.getElementById('adminBtn').style.display = 'block';
-            if(user) document.getElementById('accStatus').innerHTML = "✅<br>Profile";
-        }
+        // --- WEB ORDERING LOGIC ---
+        function placeOrderWeb() {
+            const user = localStorage.getItem('web_user');
+            if(!user) return showLogin();
+            if(cart.length === 0) return alert("Cart is empty!");
 
-        function sendOTP() {
-            let phone = "+91" + document.getElementById('userPhone').value;
-            firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier).then(res => {
-                confirmationResult = res;
-                document.getElementById('phoneStep').style.display = 'none';
-                document.getElementById('otpStep').style.display = 'block';
-            }).catch(err => alert(err.message));
-        }
+            // Order Save logic (Local Admin Storage)
+            let orders = JSON.parse(localStorage.getItem('web_orders_log')) || [];
+            const newOrder = {
+                user: user,
+                items: cart.map(i => i.name).join(', '),
+                total: cart.reduce((sum, i) => sum + i.price, 0),
+                time: new Date().toLocaleString()
+            };
+            orders.push(newOrder);
+            localStorage.setItem('web_orders_log', JSON.stringify(orders));
 
-        function verifyOTP() {
-            confirmationResult.confirm(document.getElementById('otpCode').value).then(res => {
-                localStorage.setItem('user', res.user.phoneNumber);
-                location.reload();
-            });
-        }
-
-        function addToCart(name, price) {
-            cart.push({name, price});
-            document.getElementById('cartCount').innerText = cart.length;
-        }
-
-        function sendWhatsApp() {
-            const user = localStorage.getItem('user');
-            if(!user) return document.getElementById('loginModal').style.display='flex';
-            let msg = `*NEW ORDER*%0A*Customer:* ${user}%0A%0A`;
-            cart.forEach(i => msg += `- ${i.name} (₹${i.price})%0A`);
-            window.open(`https://wa.me/917052055713?text=${msg}`);
+            // Clear Cart & Show Success
+            cart = [];
+            document.getElementById('count').innerText = "0";
+            document.getElementById('successModal').style.display = 'flex';
         }
 
         function toggleAdmin() {
-            const m = document.getElementById('adminModal');
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+            document.getElementById('adminModal').style.display = 'flex';
+            loadOrders();
         }
 
-        function handleAccountClick() { if(!localStorage.getItem('user')) document.getElementById('loginModal').style.display='flex'; }
+        function loadOrders() {
+            const logs = JSON.parse(localStorage.getItem('web_orders_log')) || [];
+            document.getElementById('orderHistory').innerHTML = logs.map(o => `
+                <div class="order-log">
+                    <b>Customer:</b> ${o.user}<br>
+                    <b>Items:</b> ${o.items}<br>
+                    <b>Total:</b> ₹${o.total} | <b>Time:</b> ${o.time}
+                </div>
+            `).reverse().join('');
+        }
+
+        // --- PRODUCT & AUTH HELPERS ---
+        function saveNewItem() {
+            const n = document.getElementById('pName').value;
+            const p = document.getElementById('pPrice').value;
+            const i = document.getElementById('pImg').value;
+            if(!n || !p || !i) return;
+            items.push({ id: Date.now(), name: n, price: p, img: i });
+            localStorage.setItem('web_products', JSON.stringify(items));
+            location.reload();
+        }
+
+        function showLogin() { document.getElementById('loginModal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         
-        function exportData() {
-            const data = localStorage.getItem('shree_items');
-            console.log(data);
-            alert("Data copied to console. Backup this text to keep products safe!");
+        function addToCart(name, price) {
+            cart.push({name, price});
+            document.getElementById('count').innerText = cart.length;
+        }
+
+        function getOTP() {
+            let phone = "+91" + document.getElementById('uPhone').value;
+            firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier).then(res => {
+                confirmation = res;
+                document.getElementById('phoneStep').style.display = 'none';
+                document.getElementById('otpStep').style.display = 'block';
+            }).catch(err => alert("Error: Use Test Number in Firebase!"));
+        }
+
+        function confirmOTP() {
+            confirmation.confirm(document.getElementById('uOTP').value).then(res => {
+                localStorage.setItem('web_user', res.user.phoneNumber);
+                location.reload();
+            });
         }
     </script>
 </body>
