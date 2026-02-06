@@ -13,7 +13,6 @@
 
 <style>
 :root{
---dark:#0f172a;
 --red:#ff4d6d;
 --green:#22c55e;
 --bg:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
@@ -30,7 +29,6 @@ padding:12px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-box-shadow:0 4px 20px rgba(0,0,0,0.4);
 }
 
 .logo-area{display:flex;align-items:center;gap:10px}
@@ -48,11 +46,9 @@ backdrop-filter:blur(12px);
 border-radius:16px;
 padding:15px;
 text-align:center;
-transition:.3s;
 box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
 
-.card:hover{transform:translateY(-5px)}
 .card img{height:90px;width:100%;object-fit:contain;margin-bottom:10px}
 
 .price{font-weight:bold;font-size:18px;color:var(--green);margin:6px 0}
@@ -65,26 +61,8 @@ border-radius:10px;
 color:white;
 font-weight:bold;
 cursor:pointer;
-margin-top:6px;
-}
-
-.modal{
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.7);
-backdrop-filter:blur(6px);
-align-items:center;
-justify-content:center;
-z-index:999;
-}
-
-.box{
-background:#111827;
-padding:25px;
-border-radius:16px;
-width:90%;
-max-width:400px;
+margin:4px 0;
+width:100%;
 }
 
 input{
@@ -97,6 +75,24 @@ background:#1e293b;
 color:white;
 }
 
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.7);
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+.box{
+background:#111827;
+padding:20px;
+border-radius:16px;
+width:90%;
+max-width:400px;
+}
+
 .bottom-nav{
 position:fixed;
 bottom:0;
@@ -107,14 +103,13 @@ justify-content:space-around;
 padding:12px 0;
 }
 
-.nav-item{color:white;font-size:12px;text-align:center;cursor:pointer}
+.nav-item{font-size:12px;text-align:center;cursor:pointer}
 
 .order-card{
 background:#1e293b;
 padding:10px;
 border-radius:10px;
 margin-bottom:10px;
-border-left:4px solid var(--green);
 font-size:12px;
 }
 </style>
@@ -124,34 +119,45 @@ font-size:12px;
 
 <header>
 <div class="logo-area">
-<img src="logo.png">
+<img src="1000007701.jpg">
 <div>
 <b>SHREE JI TECH</b>
 <p id="welcomeMsg" style="font-size:10px">Welcome Guest</p>
 </div>
 </div>
 <div>
-<button id="logoutBtn" class="btn" style="display:none;background:#444" onclick="logoutUser()">Logout</button>
-<button id="addBtn" class="btn" style="display:none" onclick="showModal('adminPanel')">➕</button>
+<button id="logoutBtn" class="btn" style="display:none;background:#444;width:auto" onclick="logoutUser()">Logout</button>
+<button id="addBtn" class="btn" style="display:none;width:auto" onclick="showModal('adminPanel')">➕</button>
 </div>
 </header>
 
+<!-- LOGIN BOX -->
+<div id="loginBox" style="padding:15px;text-align:center">
+<input id="phoneNumber" placeholder="+91XXXXXXXXXX">
+<div id="recaptcha-container"></div>
+<button class="btn" onclick="sendOTP()">Send OTP</button>
+<input id="otpBox" placeholder="Enter OTP">
+<button class="btn" onclick="verifyOTP()">Verify OTP</button>
+</div>
+
 <div class="grid" id="productGrid"></div>
 
+<!-- ADMIN PANEL -->
 <div id="adminPanel" class="modal">
 <div class="box">
-<h3>Add Product</h3>
+<h3>Add / Edit Product</h3>
 <input id="pName" placeholder="Name">
 <input id="pPrice" type="number" placeholder="Price">
 <input id="pImg" placeholder="Image URL">
 <button class="btn" onclick="saveProduct()">Save</button>
 <hr>
-<h3>Orders</h3>
+<h3>All Orders</h3>
 <div id="orderList"></div>
 <button class="btn" onclick="closeModal('adminPanel')" style="background:#444">Close</button>
 </div>
 </div>
 
+<!-- MY ORDERS -->
 <div id="myOrdersModal" class="modal">
 <div class="box">
 <h3>My Orders</h3>
@@ -177,15 +183,35 @@ measurementId: "G-NP1D792NVF"
 });
 
 firebase.analytics();
-
 const db=firebase.firestore();
 const ADMIN="+917052055713";
-let allProducts=[];
+let editId=null;
 
+/* LOGIN SYSTEM */
+firebase.auth().useDeviceLanguage();
+window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'normal'});
+
+function sendOTP(){
+firebase.auth().signInWithPhoneNumber(phoneNumber.value,window.recaptchaVerifier)
+.then(res=>{window.confirmationResult=res;alert("OTP Sent");})
+.catch(e=>alert(e.message));
+}
+
+function verifyOTP(){
+confirmationResult.confirm(otpBox.value)
+.then(res=>{
+localStorage.setItem("userPhone",res.user.phoneNumber);
+location.reload();
+})
+.catch(()=>alert("Wrong OTP"));
+}
+
+/* LOAD DATA */
 function loadData(){
 let user=localStorage.getItem("userPhone");
 if(user){
 welcomeMsg.innerText="Logged in: "+user;
+loginBox.style.display="none";
 logoutBtn.style.display="block";
 if(user===ADMIN){
 addBtn.style.display="block";
@@ -194,61 +220,62 @@ loadOrders();
 }
 
 db.collection("products").onSnapshot(s=>{
-allProducts=[];
-s.forEach(d=>allProducts.push({...d.data(),id:d.id}));
-renderProducts();
-});
-}
-
-function renderProducts(){
 productGrid.innerHTML="";
-let user=localStorage.getItem("userPhone");
-
-allProducts.forEach(p=>{
+s.forEach(doc=>{
+let p=doc.data();
 let adminBtns="";
 if(user===ADMIN){
 adminBtns=`
-<button class="btn" onclick="editProduct('${p.id}','${p.name}',${p.price},'${p.img}')">Edit</button>
-<button class="btn" style="background:#000" onclick="deleteProduct('${p.id}')">Delete</button>`;
+<button class="btn" onclick="editProduct('${doc.id}','${p.name}',${p.price},'${p.img}')">Edit</button>
+<button class="btn" style="background:#000" onclick="deleteProduct('${doc.id}')">Delete</button>`;
 }
-
 productGrid.innerHTML+=`
 <div class="card">
 <img src="${p.img||''}">
 <p>${p.name}</p>
 <div class="price">₹${p.price}</div>
-<button class="btn" onclick="orderNow('${p.id}')">Cash Order</button>
-<button class="btn" style="background:green" onclick="payNow('${p.id}')">Pay Now</button>
+<button class="btn" onclick="orderNow('${doc.id}')">Cash Order</button>
+<button class="btn" style="background:green" onclick="payNow('${doc.id}')">Pay Now</button>
 ${adminBtns}
 </div>`;
 });
+});
 }
 
+/* PRODUCT CRUD */
 function saveProduct(){
+if(editId){
+db.collection("products").doc(editId).update({
+name:pName.value,
+price:Number(pPrice.value),
+img:pImg.value
+}).then(()=>{editId=null;closeModal("adminPanel");});
+}else{
 db.collection("products").add({
 name:pName.value,
-price:Number(pPrice.value)||0,
+price:Number(pPrice.value),
 img:pImg.value,
 date:Date.now()
 }).then(()=>closeModal("adminPanel"));
 }
-
-function deleteProduct(id){
-if(confirm("Delete?")){
-db.collection("products").doc(id).delete();
-}
 }
 
 function editProduct(id,name,price,img){
+editId=id;
 pName.value=name;
 pPrice.value=price;
 pImg.value=img;
 showModal("adminPanel");
 }
 
+function deleteProduct(id){
+if(confirm("Delete?")) db.collection("products").doc(id).delete();
+}
+
+/* ORDERS */
 function orderNow(id){
 let user=localStorage.getItem("userPhone");
-if(!user){alert("Login required");return;}
+if(!user){alert("Login Required");return;}
 
 db.collection("products").doc(id).get().then(doc=>{
 let p=doc.data();
@@ -261,28 +288,25 @@ alert("Order Placed");
 
 function payNow(id){
 let user=localStorage.getItem("userPhone");
-if(!user){alert("Login required");return;}
+if(!user){alert("Login Required");return;}
 
 db.collection("products").doc(id).get().then(doc=>{
 let p=doc.data();
-
-let options={
+new Razorpay({
 key:"YOUR_RAZORPAY_KEY",
 amount:p.price*100,
 currency:"INR",
 name:"Shree Ji Tech",
 description:p.name,
-handler:function(response){
+handler:function(res){
 db.collection("orders").add({
 user,item:p.name,price:p.price,status:"Paid",
-paymentId:response.razorpay_payment_id,
+paymentId:res.razorpay_payment_id,
 date:Date.now()
 });
 alert("Payment Successful");
 }
-};
-
-new Razorpay(options).open();
+}).open();
 });
 }
 
@@ -304,7 +328,7 @@ orderList.innerHTML+=`
 
 function showMyOrders(){
 let user=localStorage.getItem("userPhone");
-if(!user){alert("Login required");return;}
+if(!user){alert("Login Required");return;}
 
 db.collection("orders").where("user","==",user)
 .onSnapshot(s=>{
@@ -322,9 +346,14 @@ myOrdersList.innerHTML+=`
 showModal("myOrdersModal");
 }
 
+function logoutUser(){
+localStorage.removeItem("userPhone");
+firebase.auth().signOut();
+location.reload();
+}
+
 function showModal(id){document.getElementById(id).style.display="flex"}
 function closeModal(id){document.getElementById(id).style.display="none"}
-function logoutUser(){localStorage.removeItem("userPhone");location.reload();}
 
 window.onload=loadData;
 </script>
