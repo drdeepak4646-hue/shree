@@ -3,120 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shree Ji Tech | Profile Edition</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-
+    <title>Shree Ji Tech | Ultimate Edition</title>
     <style>
-        :root { --skyblue: #87CEEB; --darkblue: #005f73; --red: #e63946; --white: #ffffff; --gold: #ffd700; }
+        :root { --skyblue: #87CEEB; --darkblue: #005f73; --red: #e63946; --white: #ffffff; --green: #28a745; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--skyblue); min-height: 100vh; padding-bottom: 100px; overflow-x: hidden; }
+        body { background: var(--skyblue); min-height: 100vh; padding-bottom: 100px; }
+
+        header { background: var(--darkblue); padding: 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--red); display: flex; justify-content: space-between; align-items: center; color: white; }
+        .admin-panel { background: #222; color: white; padding: 8px; font-size: 12px; display: none; justify-content: space-around; align-items: center; }
         
-        .bg-loop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-size: cover; background-position: center; filter: brightness(0.6); animation: slideBg 25s infinite ease-in-out; }
-        @keyframes slideBg {
-            0%, 100% { background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1500'); }
-            50% { background-image: url('https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=1500'); }
-        }
-
-        header { background: var(--darkblue); padding: 10px 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--red); display: flex; justify-content: space-between; align-items: center; }
-        .logo-section { display: flex; align-items: center; gap: 10px; }
-        .logo-text h1 { color: var(--red); font-size: 18px; font-weight: 900; text-shadow: 1px 1px 0px #fff; }
-        .bansuri { width: 60px; animation: bansuriFloat 3s infinite ease-in-out; }
-        @keyframes bansuriFloat { 0%, 100% { transform: rotate(-15deg); } 50% { transform: rotate(-5deg) translateY(-5px); } }
-
-        .top-tools { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 10px; position: sticky; top: 55px; z-index: 999; }
-        .search-bar { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--red); outline: none; margin-bottom: 10px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
-        .card { background: rgba(255,255,255,0.9); padding: 10px; border-radius: 12px; text-align: center; border: 2px solid var(--red); }
-        .card img { height: 100px; width: 100%; object-fit: contain; }
-        .add-btn { background: var(--red); color: white; border: none; width: 100%; padding: 8px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 5px; }
+        .card { background: white; padding: 10px; border-radius: 12px; text-align: center; border: 2px solid var(--red); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card img { height: 80px; width: 100%; object-fit: contain; }
+        
+        .add-btn { background: var(--red); color: white; border: none; width: 100%; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 5px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; overflow-y: auto; }
+        .box { background: white; padding: 20px; width: 92%; max-width: 400px; border-radius: 15px; border: 3px solid var(--red); }
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--darkblue); display: flex; justify-content: space-around; padding: 12px; border-top: 3px solid var(--red); z-index: 1001; }
+        .profile-dp { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--red); display: block; margin: 0 auto 10px; object-fit: cover; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ccc; border-radius: 8px; }
+        
+        .pay-box { border: 2px solid #eee; padding: 10px; border-radius: 10px; margin-top: 10px; cursor: pointer; }
+        .pay-box.active { border-color: var(--green); background: #f0fff0; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--darkblue); display: flex; justify-content: space-around; padding: 12px; border-top: 3px solid var(--red); }
         .nav-item { color: white; text-align: center; font-size: 11px; cursor: pointer; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; }
-        .box { background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: 15px; border: 3px solid var(--red); }
-        .profile-card { border: 1px solid #ddd; padding: 10px; border-radius: 10px; margin-top: 10px; background: #f9f9f9; }
-        .order-item { font-size: 12px; border-bottom: 1px dashed #ccc; padding: 5px 0; }
     </style>
 </head>
 <body>
-    <div class="bg-loop"></div>
-    <header>
-        <div class="logo-section">
-            <div class="logo-text"><h1>SHREE JI <span>TECH</span></h1></div>
-            <svg class="bansuri" viewBox="0 0 200 60"><rect x="10" y="25" width="150" height="8" rx="4" fill="#8B4513" /><path d="M140 25 Q160 0 180 15 Q160 30 140 25" fill="#006400" /></svg>
-        </div>
-        <button id="adminBtn" style="display:none; background:#28a745; color:white; border:none; padding:5px 10px; border-radius:5px;" onclick="toggleAdmin()">ADMIN</button>
-    </header>
 
-    <div class="top-tools">
-        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search Items..." oninput="searchItems()">
+    <div class="admin-panel" id="adminBar">
+        <span>COD: <b id="codStatusText">ON</b></span>
+        <button onclick="toggleCOD()" style="padding:2px 10px;">Toggle</button>
     </div>
+
+    <header onclick="askAdmin()">
+        <h2 style="color:var(--red)">SHREE JI <span style="color:white">TECH</span></h2>
+        <small>Bichhiya, GKP</small>
+    </header>
 
     <div class="grid" id="productGrid"></div>
 
     <div id="profileModal" class="modal"><div class="box">
-        <h3 style="color:var(--red)">My Profile</h3>
-        <div class="profile-card">
-            <p><strong>Phone:</strong> <span id="profPhone"></span></p>
-            <p><strong>Member Since:</strong> <span id="profDate"></span></p>
+        <h3 style="text-align:center">My Profile</h3>
+        <img id="displayDP" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-dp">
+        <input type="text" id="profDP" placeholder="Paste Photo Link (URL)">
+        <input type="text" id="profEmail" placeholder="Email Address (Optional)">
+        <select id="profGender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+        <button class="add-btn" onclick="saveProfile()" style="background:var(--darkblue)">UPDATE PROFILE</button>
+        <button class="add-btn" onclick="logout()" style="background:#666">LOGOUT</button>
+        <button onclick="closeModal('profileModal')" style="width:100%; background:none; border:none; margin-top:10px; color:gray;">Close</button>
+    </div></div>
+
+    <div id="checkoutModal" class="modal"><div class="box">
+        <h3>Checkout</h3>
+        <div id="sewaDocs" style="display:none; background:#fff3f3; padding:10px; border:1px dashed var(--red); margin:10px 0;">
+            <p style="font-size:12px; color:var(--red)">📄 Upload Documents (Aadhar/Photo)</p>
+            <input type="file" id="userDoc">
         </div>
-        <h4 style="margin-top:15px; color:var(--darkblue)">My Orders</h4>
-        <div id="myOrdersList" style="max-height:150px; overflow-y:auto; margin-bottom:10px;"></div>
-        <button class="add-btn" onclick="logout()">LOGOUT</button>
-        <button onclick="closeModal('profileModal')" style="margin-top:10px; background:none; border:none; color:gray; width:100%;">Close</button>
+
+        <div class="pay-box active" id="optOnline" onclick="setMethod('Online')">📱 Online Payment (QR)</div>
+        <div class="pay-box" id="optCOD" onclick="setMethod('COD')">💵 Cash on Delivery</div>
+
+        <div id="qrDiv" style="text-align:center; margin-top:10px;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=dr.deepak2121-2@oksbi&pn=Deepak%20Singh" style="width:130px;">
+            <p style="font-size:11px;">Pay to: <b>Deepak Singh</b></p>
+            <input type="file" id="payScreenshot" style="font-size:11px;">
+            <small>Upload Screenshot after payment</small>
+        </div>
+
+        <textarea id="orderAddress" placeholder="Enter Full Address for Delivery"></textarea>
+        <button class="add-btn" onclick="confirmOrder()">PLACE ORDER</button>
+        <button onclick="closeModal('checkoutModal')" style="width:100%; background:none; border:none; margin-top:10px; color:gray;">Cancel</button>
     </div></div>
 
     <div id="loginModal" class="modal"><div class="box">
-        <h3 style="color:var(--red)">Login</h3>
-        <input type="number" id="uPhone" placeholder="Mobile Number">
-        <div id="recaptcha-container"></div>
-        <button class="add-btn" onclick="getOTP()">Send OTP</button>
+        <h3>Login to Continue</h3>
+        <input type="number" id="loginPhone" placeholder="Enter Mobile Number">
+        <button class="add-btn" onclick="doLogin()">LOGIN</button>
     </div></div>
 
     <div class="bottom-nav">
         <div class="nav-item" onclick="location.reload()">🏠<br>Home</div>
-        <div class="nav-item" onclick="openCheckout()">🛒<br>Cart (<span id="count">0</span>)</div>
+        <div class="nav-item" onclick="openCheckout()">🛒<br>Cart (<span id="cartCount">0</span>)</div>
         <div class="nav-item" onclick="showProfile()">👤<br>Profile</div>
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyBuCywyMgEw_j9yeHD-E4KwRWZGreWagTc", authDomain: "shree-4c33e.firebaseapp.com", projectId: "shree-4c33e", storageBucket: "shree-4c33e.firebasestorage.app", messagingSenderId: "759128544690", appId: "1:759128544690:web:3f57e7ed9117a1acdd80ab" };
-        firebase.initializeApp(firebaseConfig);
-
-        let products = JSON.parse(localStorage.getItem('shreeji_db')) || [{id:1, name:"Laptop i5", price:18500, img:"https://m.media-amazon.com/images/I/61N6nN-mRLL._AC_UY218_.jpg"}];
+        let items = [
+            {id:1, name:"Refurbished i5", price:18500, cat:"Tech", img:"https://m.media-amazon.com/images/I/61N6nN-mRLL._AC_UY218_.jpg"},
+            {id:2, name:"PAN Card Apply", price:150, cat:"Sewa", img:"https://cdn-icons-png.flaticon.com/512/1570/1570887.png"},
+            {id:3, name:"Income Certificate", price:100, cat:"Sewa", img:"https://cdn-icons-png.flaticon.com/512/2850/2850387.png"}
+        ];
         let cart = [];
+        let method = 'Online';
+        let codEnabled = localStorage.getItem('cod_active') !== 'false';
 
         function render() {
-            document.getElementById('productGrid').innerHTML = products.map(p => `
+            document.getElementById('productGrid').innerHTML = items.map(i => `
                 <div class="card">
-                    <img src="${p.img}"><p>${p.name}</p>
-                    <div style="font-weight:bold">₹${p.price}</div>
-                    <button class="add-btn" onclick="addToCart('${p.name}', ${p.price})">ADD</button>
+                    <img src="${i.img}">
+                    <p style="font-size:13px; height:35px;">${i.name}</p>
+                    <b style="color:var(--darkblue)">₹${i.price}</b>
+                    <button class="add-btn" onclick="addToCart('${i.name}', ${i.price}, '${i.cat}')">ADD</button>
                 </div>`).join('');
+            document.getElementById('codStatusText').innerText = codEnabled ? "ON" : "OFF";
+        }
+
+        function addToCart(n, p, c) { cart.push({n, p, c}); document.getElementById('cartCount').innerText = cart.length; }
+
+        function openCheckout() {
+            if(!localStorage.getItem('user')) return showModal('loginModal');
+            if(cart.length === 0) return alert("Cart khali hai!");
+            const needsDoc = cart.some(i => i.c === 'Sewa');
+            document.getElementById('sewaDocs').style.display = needsDoc ? 'block' : 'none';
+            document.getElementById('checkoutModal').style.display = 'flex';
+        }
+
+        function setMethod(m) {
+            if(m === 'COD' && !codEnabled) return alert("COD abhi band hai!");
+            method = m;
+            document.getElementById('optOnline').className = m==='Online' ? 'pay-box active' : 'pay-box';
+            document.getElementById('optCOD').className = m==='COD' ? 'pay-box active' : 'pay-box';
+            document.getElementById('qrDiv').style.display = m==='Online' ? 'block' : 'none';
+        }
+
+        function toggleCOD() {
+            codEnabled = !codEnabled;
+            localStorage.setItem('cod_active', codEnabled);
+            render();
+        }
+
+        function askAdmin() {
+            if(prompt("Admin Password?") === "shree713") document.getElementById('adminBar').style.display = 'flex';
         }
 
         function showProfile() {
-            const user = localStorage.getItem('web_user');
-            if(!user) return showLogin();
-            document.getElementById('profPhone').innerText = user;
-            document.getElementById('profDate').innerText = new Date().toLocaleDateString();
-            
-            // Show User Orders
-            const allOrders = JSON.parse(localStorage.getItem('shreeji_orders')) || [];
-            const myOrders = allOrders.filter(o => o.user === user);
-            document.getElementById('myOrdersList').innerHTML = myOrders.length ? 
-                myOrders.map(o => `<div class="order-item">📦 ${o.items}<br><small>${o.time} - ₹${o.total}</small></div>`).join('') : "No orders yet.";
-            
-            document.getElementById('profileModal').style.display = 'flex';
+            const u = localStorage.getItem('user');
+            if(!u) return showModal('loginModal');
+            const p = JSON.parse(localStorage.getItem('profile_'+u)) || {};
+            document.getElementById('displayDP').src = p.dp || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('profEmail').value = p.email || '';
+            document.getElementById('profGender').value = p.gender || 'Male';
+            showModal('profileModal');
         }
 
-        function logout() { localStorage.removeItem('web_user'); location.reload(); }
-        function showLogin() { document.getElementById('loginModal').style.display='flex'; }
-        function closeModal(id) { document.getElementById(id).style.display='none'; }
-        function addToCart(n, p) { cart.push({name:n, price:p}); document.getElementById('count').innerText = cart.length; }
+        function saveProfile() {
+            const u = localStorage.getItem('user');
+            const data = { dp: document.getElementById('profDP').value, email: document.getElementById('profEmail').value, gender: document.getElementById('profGender').value };
+            localStorage.setItem('profile_'+u, JSON.stringify(data));
+            alert("Profile Updated!");
+            location.reload();
+        }
+
+        function confirmOrder() {
+            alert("Order Successful! Deepak Singh aapse jaldi contact karenge.");
+            cart = [];
+            location.reload();
+        }
+
+        function doLogin() { 
+            const ph = document.getElementById('loginPhone').value;
+            if(ph.length < 10) return alert("Enter valid number");
+            localStorage.setItem('user', ph); 
+            location.reload(); 
+        }
+
+        function logout() { localStorage.removeItem('user'); location.reload(); }
+        function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         
         window.onload = render;
     </script>
